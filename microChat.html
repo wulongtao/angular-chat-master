@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html ng-app="app">
+<head>
+	<meta charset="utf-8">
+	<title>猪猪微答客服聊天</title>
+	<link rel="stylesheet" type="text/css" href="css/lib/font-awesome.min.css">
+	<link rel="stylesheet" type="text/css" href="css/lib/initialize.min.css">
+	<link rel="stylesheet" type="text/css" href="css/micro-chat.css">
+	<script type="text/javascript" src="js/lib/angular.min.js"></script>
+	<script type="text/javascript" src="js/lib/angular-contenteditable.js"></script>
+</head>
+<body style="margin: 20px;">
+<div ng-controller="CtlChat"  class="wrapper">
+	
+
+	<div class="chat-wrapper">
+		<!-- 左侧栏 -->
+		<div class="chat-bar left-bar">
+			<ul class="user-list">
+				<!-- 搜索框和添加用户按钮 -->
+				<li class="left-tool-bar">
+					<input class="filter-tool" ng-model="searchNick" type="text">
+					<span ng-click="showDialog()" class="user-add">+</span>
+				</li>
+				<!--客服账号列表-->
+				<li class="user-item" ng-repeat="user in userList | filter:{nick:searchNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+					<img class="user-avatar" ng-src=" {{user.avatar}} "> <!-- 头像 -->
+					<span class="user-nick"> {{user.nick}} </span>
+					<i class="fa fa-times-circle fa-lg" aria-hidden="true"></i>
+				</li>
+			</ul>
+		</div>
+
+		<!-- 聊天窗口 -->
+		<div class="chat-box">
+			<!-- 标题栏 -->
+			<div class="chat-title">
+				<img class="target-user-avatar" ng-src=" {{targetUser.avatar}} ">
+				<div class="inner-chat-title">
+					<span class="target-user-nick"> {{targetUser.nick}} </span>
+					<span class="problem-content"> {{problem.content}} </span>
+				</div>
+			</div>
+			<!-- 聊天内容显示区域 -->
+			<div class="chat-main">
+				<ul>
+					<li ng-repeat="clog in chatLogs">
+						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==userActive]">
+							<div class="avatar"><img ng-src=" {{clog.avatar}} "></div>
+							<div class="item-wrapper" >
+								<div class="top" > 
+									<span> {{clog.nick}} </span> 
+									<span> {{clog.addTime}} </span> 
+								</div>
+								<div class="chat-text">
+									{{clog.content}} 
+								</div>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<!-- 聊天工具栏显示区域 -->
+			<div class="chat-tool">
+				<i class="fa fa-smile-o fa-lg" aria-hidden="true"></i>
+				<label for="chatImg" class="fa fa-picture-o fa-lg" aria-hidden="true">
+					<input type="file" id="chatImg" name="" style="display: none;">
+				</label>
+			</div>
+			<div ng-model="testInput" class="chat-textarea" contenteditable="true" ng-model="model"  select-non-editable="true">
+			</div>
+			<!-- 聊天框尾部 -->
+			<div class="chat-footer">
+				<span class="btn-send" ng-click="testInputFunc()">发送</span>
+			</div>
+		</div>
+
+		<!-- 右侧栏 -->
+		<div class="chat-bar right-bar">
+			<ul class="user-list">
+				<!-- 搜索框和添加用户按钮 -->
+				<li class="left-tool-bar">
+					<input class="filter-tool" ng-model="searchTargetNick" type="text">
+					<span ng-click="showQuestion()" class="user-add">？</span>
+				</li>
+				<li class="user-item" ng-repeat="user in userList|filter:{nick:searchTargetNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+					<img class="user-avatar" ng-src=" {{user.avatar}} "> <!-- 头像 -->
+					<span class="user-nick"> {{user.nick}} </span>
+					<i class="fa fa-times-circle fa-lg" aria-hidden="true"></i>
+				</li>
+			</ul>
+		</div>
+
+	</div>
+
+	<!-- 问题栏 -->
+	<div class="que-menu" ng-class="{true : 'active'}[queActive==1]">
+		
+	</div>
+
+	<!-- 登录弹出框 -->
+	<div class="md md-effect" ng-class="{true : 'md-active'}[dialogActive]">
+		<div class="md-header">
+			<i class="fa fa-times fa-lg" ng-click="showDialog()" aria-hidden="true"></i>
+		</div>
+		<div class="md-content">
+			<label for="user-phone">
+				<span>手机号</span>
+				<input id="user-phone" type="text" >
+			</label>
+			<label for="user-passwd">
+				<span>密码</span>
+				<input id="user-passwd" type="text">
+			</label>
+		</div>
+		<div class="md-footer">
+			<span class="btn btn-success">登录</span>
+			<span class="wr_20"></span>
+			<span ng-click="showDialog()" class="btn btn-warning">取消</span>
+		</div>
+	</div>
+	<div ng-click="showDialog()" class="md-overlay"></div><!-- the overlay element -->
+</div>
+
+
+
+</body>
+<script type="text/javascript" src="js/httpService.js"></script>
+<script type="text/javascript" src="js/chatUtil.js"></script>
+<script type="text/javascript" src="js/wsUtil.js"></script>
+<script type="text/javascript" src="js/microChat.js"></script>
+
+</html>
