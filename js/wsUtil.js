@@ -4,6 +4,7 @@
 angular.module('chat', ['httpService'])
     .factory('wsFactory', function(HttpService) {
 
+        wss.HttpService = HttpService;
         return wss;
     });
 
@@ -14,6 +15,8 @@ var wss = {
 
     host : '113.108.232.194',
     port : '8381',
+
+    HttpService : null,
 
     getInstance : getInstance,
     init : init,
@@ -40,6 +43,15 @@ function getInstance() {
     if (this.type == 1) {
         return new WebSocket("ws://" + this.host + ":" + this.port);
     }
+}
+
+/**
+ * 网页登录客服账号
+ * @param phone
+ * @param password
+ */
+function addUser(phone, password) {
+    this.HttpService.post()
 }
 
 /**
