@@ -6,8 +6,13 @@
 	<link rel="stylesheet" type="text/css" href="css/lib/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/initialize.min.css">
 	<link rel="stylesheet" type="text/css" href="css/micro-chat.css">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/angularjs-toaster/1.1.0/toaster.min.css" rel="stylesheet" />
+
 	<script type="text/javascript" src="js/lib/angular.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-contenteditable.js"></script>
+	<script type="text/javascript" src="js/lib/angular-animate.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/angularjs-toaster/1.1.0/toaster.min.js"></script>
+
 </head>
 <body style="margin: 20px;">
 <div ng-controller="CtlChat"  class="wrapper">
@@ -20,7 +25,7 @@
 				<!-- 搜索框和添加用户按钮 -->
 				<li class="left-tool-bar">
 					<input class="filter-tool" ng-model="searchNick" type="text">
-					<span ng-click="showDialog()" class="user-add">+</span>
+					<span ng-click="showLoginDialog()" class="user-add">+</span>
 				</li>
 				<!--客服账号列表-->
 				<li class="user-item" ng-repeat="user in userList | filter:{nick:searchNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
@@ -99,35 +104,41 @@
 	</div>
 
 	<!-- 登录弹出框 -->
-	<div class="md md-effect" ng-class="{true : 'md-active'}[dialogActive]">
+	<div class="md md-effect" ng-class="{true : 'md-active'}[loginDialogActive]">
 		<div class="md-header">
 			<i class="fa fa-times fa-lg" ng-click="showDialog()" aria-hidden="true"></i>
 		</div>
 		<div class="md-content">
 			<label for="user-phone">
 				<span>手机号</span>
-				<input id="user-phone" type="text" >
+				<input ng-enter="doLogin(userPhone,userPasswd)" ng-model="userPhone" id="user-phone" type="text" >
 			</label>
 			<label for="user-passwd">
 				<span>密码</span>
-				<input id="user-passwd" type="text">
+				<input ng-enter="doLogin(userPhone,userPasswd)" ng-model="userPasswd" id="user-passwd" type="text">
 			</label>
 		</div>
 		<div class="md-footer">
-			<span class="btn btn-success">登录</span>
+			<span ng-click="doLogin(userPhone,userPasswd)" class="btn btn-success">登录</span>
 			<span class="wr_20"></span>
-			<span ng-click="showDialog()" class="btn btn-warning">取消</span>
+			<span ng-click="showLoginDialog()" class="btn btn-warning">取消</span>
 		</div>
 	</div>
-	<div ng-click="showDialog()" class="md-overlay"></div><!-- the overlay element -->
+	<div ng-click="showLoginDialog()" class="md-overlay"></div><!-- the overlay element -->
+
+
+	<!--toaster-->
+	<toaster-container></toaster-container>
 </div>
 
 
 
 </body>
 <script type="text/javascript" src="js/httpService.js"></script>
+<script type="text/javascript" src="js/urlService.js"></script>
 <script type="text/javascript" src="js/chatUtil.js"></script>
-<script type="text/javascript" src="js/wsUtil.js"></script>
+<script type="text/javascript" src="js/maConstants.js"></script>
+<script type="text/javascript" src="js/wsService.js"></script>
 <script type="text/javascript" src="js/microChat.js"></script>
 
 </html>

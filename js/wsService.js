@@ -1,10 +1,10 @@
 /**
  * Created by raid on 2016/11/10.
  */
-angular.module('chat', ['httpService'])
-    .factory('wsFactory', function(HttpService) {
+angular.module('chat', ['urlService'])
+    .factory('wsFactory', function(UrlService) {
 
-        wss.HttpService = HttpService;
+        wss.UrlService = UrlService;
         return wss;
     });
 
@@ -17,6 +17,8 @@ var wss = {
     port : '8381',
 
     HttpService : null,
+
+    addUser : addUser,
 
     getInstance : getInstance,
     init : init,
@@ -51,7 +53,7 @@ function getInstance() {
  * @param password
  */
 function addUser(phone, password) {
-    this.HttpService.post()
+    // this.
 }
 
 /**
