@@ -28,7 +28,7 @@
 					<span ng-click="showLoginDialog()" class="user-add">+</span>
 				</li>
 				<!--客服账号列表-->
-				<li class="user-item" ng-repeat="user in userList | filter:{nick:searchNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+				<li class="user-item" ng-repeat="user in users | filter:{nick:searchNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
 					<img class="user-avatar" ng-src=" {{user.avatar}} "> <!-- 头像 -->
 					<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true"></i>
@@ -139,6 +139,8 @@
 <script type="text/javascript" src="js/chatUtil.js"></script>
 <script type="text/javascript" src="js/maConstants.js"></script>
 <script type="text/javascript" src="js/wsService.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<script type="text/javascript" src="js/dataService.js"></script>
 <script type="text/javascript" src="js/microChat.js"></script>
 
 </html>

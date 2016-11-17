@@ -1,12 +1,12 @@
-var app = angular.module("app", ['contenteditable', 'chat', 'toaster', 'ngAnimate']);
+var app = angular.module("app", ['contenteditable', 'chat', 'dataService']);
 
-app.controller("CtlChat", ['$scope', 'Common', 'wsFactory', function($scope, common, wsFactory) {
+app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope, wsService, dataService) {
 
 
     //初始化wsFactory
-    wsFactory.init({type : 1});
+    wsService.init({type : 1});
 
-
+    $scope.users = dataService.users;
 
 
     $scope.userClick = function(uid) {
@@ -35,12 +35,11 @@ app.controller("CtlChat", ['$scope', 'Common', 'wsFactory', function($scope, com
 
 
     function doLogin(phone, passwd) {
-        // toastr.success(phone + " .. " + passwd);
-        // Common.toast('info', 'eee');
-        if (!Common.isValid()) {
-
+        if (wsService.addUser(phone, passwd, $scope) === false) {
+            return false;
         }
-
+        $scope.userPhone = "";
+        $scope.userPasswd = "";
         $scope.loginDialogActive = !$scope.loginDialogActive;
     }
 
@@ -49,32 +48,32 @@ app.controller("CtlChat", ['$scope', 'Common', 'wsFactory', function($scope, com
 
 }]);
 
-//全局函数工厂
+/*//全局函数工厂
 app.factory('Common', function(toaster) {
     var service = {};
-    /**
+    /!**
      * 去掉内容中的tags
-     */
+     *!/
     service.htmlToPlaintext = function(text) {
         return text ? String(text).replace(/<[^>]+>/gm, '') : '';
     };
 
-    /**
+    /!**
      * toaster封装
      * @param type success,info,error
      * @param body 内容
-     */
+     *!/
     service.toast = function (type, body) {
 
         toaster.pop({
             type: type, body: body});
     };
 
-    /**
+    /!**
      * 判断字段是否为 ''、null、undefined
      * @param param 某个值或者数组
      * @returns {boolean}
-     */
+     *!/
     service.isValid = function (param) {
         var value = true;
         if (Array.isArray(param)) {
@@ -88,7 +87,7 @@ app.factory('Common', function(toaster) {
     };
 
     return service;
-});
+});*/
 
 
 /**

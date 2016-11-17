@@ -1,8 +1,9 @@
 /**
  * Created by raid on 2016/11/16.
+ * 此函数封装了一层http函数
  */
 angular.module('httpService', [])
-    .service('HttpService', HttpUtil);
+    .service('httpService', HttpUtil);
 
 
 /**
@@ -43,11 +44,7 @@ function HttpUtil($http, $q) {
         }
 
         promise.then(function (rep) {
-            if (rep.data.success || rep.data.status == 1) {
-                defer.resolve(rep.data);
-            } else {
-                console.log(rep.data.message);
-            }
+            defer.resolve(rep.data);
         }, function () {
             defer.reject('error');
         });
