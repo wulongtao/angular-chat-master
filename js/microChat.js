@@ -23,10 +23,11 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
         $scope.queActive = $scope.queActive ? 0 : 1;
     };
 
-    //登录对话框
-    $scope.loginDialogActive = false;
+    //登录对话框 与dataService相应变量进行绑定
+    $scope.uiVar = dataService.uiVar;
+    $scope.users = dataService.users;
     $scope.showLoginDialog = function() {
-        $scope.loginDialogActive = !$scope.loginDialogActive;
+        dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
     };
 
     //登录
@@ -35,15 +36,8 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
 
 
     function doLogin(phone, passwd) {
-        if (wsService.addUser(phone, passwd, $scope) === false) {
-            return false;
-        }
-        $scope.userPhone = "";
-        $scope.userPasswd = "";
-        $scope.loginDialogActive = !$scope.loginDialogActive;
+        wsService.addUser(phone, passwd, $scope)
     }
-
-
 
 
 }]);

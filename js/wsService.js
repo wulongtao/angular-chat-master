@@ -7,7 +7,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     var wss = {
         type : 0, //类型1->websocket，2->socket.io
         wss : new Array(),
-        msgCallback : null,
 
         host : '113.108.232.194',
         port : '8381',
@@ -22,7 +21,13 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         onopen : onopen,
         onmessage : onmessage,
         onclose : onclose,
-        sendMsg : sendMsg
+        sendMsg : sendMsg,
+
+    };
+
+    var MessageHandler = {
+        handleMessage : handleMessage,
+        handleServiceNotice : handleServiceNotice,
     };
 
     return wss;
@@ -52,20 +57,33 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      */
     function addUser(phone, password) {
 
+        //参数校验
         if (!common.isValid([phone, password])) {
             common.toast('info', maConstants.message.empTyLoginParams);
             return false;
         }
 
+        //发送请求
         urlService.user.add(phone, password).then(function (data) {
             console.log(data);
+            if (data.result != 0) {
+                common.toast('info', data.message);
+                return false;
+            }
+
+            wss.login(data.data);
+
+
             dataService.users.push(data.data);
+            dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
+            dataService.uiVar.loginParams.userPhone = "";
+            dataService.uiVar.loginParams.userPasswd = "";
         });
 
     }
 
     /**
-     * 登录
+     * 登录WebSocket
      * @param user json对象
      */
     function login(user) {
@@ -87,9 +105,13 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      * 打开状态
      */
     function onopen(user) {
-        // console.log("www");
+        var loginUser = {
+            type : maConstants.wsMessageType.TYPE_LOGIN,
+            uid : user.uid,
+            sid : user.sid
+        };
         console.log(user);
-        this.sendMsg(user.uid, user);
+        this.sendMsg(user.uid, loginUser);
     }
 
     /**
@@ -97,11 +119,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      * @param msg
      */
     function onmessage(msg) {
+        msg = JSON.parse(msg.data);
         console.log(msg);
-        this.test = "ggeeegg";
-        if (this.msgCallback!=null) {
-            this.msgCallback(msg.data);
-        }
+
+        MessageHandler.handleMessage(msg);
     }
 
     /**
@@ -124,6 +145,39 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             return true;
         } else {
             return false;
+        }
+    }
+
+
+    /**
+     * 处理onMessage事件函数
+     * @param msg
+     */
+    function handleMessage(msg) {
+        var type = parseInt(msg.type);
+
+        switch (type) {
+
+            //type=5服务端消息通知，比如通知客户端已接收到消息
+            case maConstants.wsMessageType.TYPE_SERVICE_NOTICE :
+                this.handleServiceNotice(msg);
+                break;
+        }
+
+    }
+
+    /**
+     * 服务端消息通知，比如通知客户端已接收到消息
+     * @param msg
+     */
+    function handleServiceNotice(msg) {
+        var result = parseInt(msg.result);
+        var messageType = parseInt(msg.messageType);
+
+        switch (result) {
+            case 0:
+                common.toast('success', maConstants.message.loginSuccess);
+                break;
         }
     }
 });

@@ -12,7 +12,7 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
     return service;
 
     function addUser(phone, passwd) {
-        return httpService.get("http://lh.zhuzhu.com/MicroAnswer/?_c=microAnswerOperator&_a=addUser&phone="+phone+"&password="+passwd
+        return httpService.get("http://weida.products-test.zhuzhu.com/?_c=microAnswerOperator&_a=addUser&phone="+phone+"&password="+passwd
             ).then(function (data) {
                 return data;
             });
