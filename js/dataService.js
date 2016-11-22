@@ -17,17 +17,30 @@ angular.module('dataService', []).factory('dataService', function () {
 
         },
 
-        removeUser : removeUser,
+        addUser : addUser, //添加用户
+        removeUser : removeUser, //删除用户
+        getUser : getUser, //获取用户
+    };
+
+    function addUser(user) {
+        // this.users.push(user);
+        this.users[user.uid] = user;
     }
 
     function removeUser(uid) {
-        for (var i = 0; i < this.users.length; i++) {
-            if (users[i].uid == uid) {
-                users.splice(i, 1);
-                return true;
-            }
+        if (!this.users[uid]) {
+            return false;
         }
+        this.users.splice(uid, 1);
+
         return false;
+    }
+
+    function getUser(uid) {
+        if (!this.users[uid]) {
+            return null;
+        }
+        return this.users[uid];
     }
 
     return data;

@@ -32,11 +32,19 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
 
     //登录
     $scope.doLogin = doLogin;
-
+    //退出登录
+    $scope.userLogout = userLogout;
 
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)
+    }
+
+    function userLogout(uid) {
+        wsService.logout(uid);
+        setTimeout(function () {
+
+        })
     }
 
 

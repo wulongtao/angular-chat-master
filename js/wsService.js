@@ -11,23 +11,18 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         host : '113.108.232.194',
         port : '8381',
 
-        HttpService : null,
-
         addUser : addUser,
 
         getInstance : getInstance,
         init : init,
         login : login,
+        logout: logout,
         onopen : onopen,
         onmessage : onmessage,
         onclose : onclose,
+        // wsClose : wsClose,
         sendMsg : sendMsg,
 
-    };
-
-    var MessageHandler = {
-        handleMessage : handleMessage,
-        handleServiceNotice : handleServiceNotice,
     };
 
     return wss;
@@ -65,7 +60,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         //发送请求
         urlService.user.add(phone, password).then(function (data) {
-            console.log(data);
             if (data.result != 0) {
                 common.toast('info', data.message);
                 return false;
@@ -73,8 +67,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
             wss.login(data.data);
 
-
-            dataService.users.push(data.data);
+            dataService.addUser(data.data);
             dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
             dataService.uiVar.loginParams.userPhone = "";
             dataService.uiVar.loginParams.userPasswd = "";
@@ -102,6 +95,23 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     }
 
     /**
+     * 退出登录
+     * @param uid
+     */
+    function logout(uid) {
+        if (!uid) return ;
+        var user = dataService.getUser(uid);
+        if (!user) return ;
+
+        var logoutUser = {
+            type : maConstants.wsMessageType.TYPE_LOGOUT,
+            uid : user.uid,
+            sid : user.sid
+        };
+        this.sendMsg(user.uid, logoutUser);
+    }
+
+    /**
      * 打开状态
      */
     function onopen(user) {
@@ -121,8 +131,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     function onmessage(msg) {
         msg = JSON.parse(msg.data);
         console.log(msg);
-
-        MessageHandler.handleMessage(msg);
+        handleMessage(msg);
     }
 
     /**
@@ -130,6 +139,11 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      */
     function onclose() {
         console.log("onclose");
+    }
+
+    function wsClose(uid) {
+        dataService.removeUser(uid);
+        wss.wss[uid] = null;
     }
 
     /**
@@ -160,7 +174,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
             //type=5服务端消息通知，比如通知客户端已接收到消息
             case maConstants.wsMessageType.TYPE_SERVICE_NOTICE :
-                this.handleServiceNotice(msg);
+                handleServiceNotice(msg);
                 break;
         }
 
@@ -176,7 +190,13 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         switch (result) {
             case 0:
-                common.toast('success', maConstants.message.loginSuccess);
+                if (messageType == maConstants.wsMessageType.TYPE_LOGIN) {
+                    // common.toast('success', maConstants.message.loginSuccess);
+                } else if (messageType == maConstants.wsMessageType.TYPE_LOGOUT) {
+                    wsClose(msg.toUserId);
+                    common.toast('success', msg.message);
+                }
+
                 break;
         }
     }
