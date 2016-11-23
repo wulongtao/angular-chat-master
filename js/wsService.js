@@ -175,17 +175,26 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         var type = parseInt(msg.type);
 
         switch (type) {
-
-            //type=5服务端消息通知，比如通知客户端已接收到消息
-            case maConstants.wsMessageType.TYPE_SERVICE_NOTICE :
+            case maConstants.wsMessageType.TYPE_SERVICE_NOTICE : //type=5服务端消息通知，比如通知客户端已接收到消息
                 handleServiceNotice(msg);
                 break;
+
+            case maConstants.wsMessageType.TYPE_ANSWER :  //type=8把问题发送给符合条件的用户
+                handleQuestionNotice(msg);
+                break;
+
         }
 
         //更新dom,两种方法
         // $rootScope.$apply();
         $timeout(angular.noop);
 
+    }
+
+    function handleQuestionNotice(msg) {
+
+        //把qid存到每一个客服中
+        dataService.addQuestion(msg.toUserId, msg.qid);
     }
 
     /**

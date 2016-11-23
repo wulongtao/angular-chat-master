@@ -5,12 +5,13 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
 
     //初始化wsFactory
     wsService.init({type : 1});
+    $scope.userActive = 0;
 
-    $scope.users = dataService.users;
 
 
     $scope.userClick = function(uid) {
         $scope.userActive = uid;
+        $scope.queActive = 0;
     };
     $scope.testInput = "wegweg";
     $scope.testInputFunc = function() {
@@ -18,8 +19,6 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
     };
     $scope.queActive = 0;
     $scope.showQuestion = function() {
-        console.log($scope.queActive);
-        console.log($scope.queActive);
         $scope.queActive = $scope.queActive ? 0 : 1;
     };
 
@@ -50,47 +49,6 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
 
 
 }]);
-
-/*//全局函数工厂
-app.factory('Common', function(toaster) {
-    var service = {};
-    /!**
-     * 去掉内容中的tags
-     *!/
-    service.htmlToPlaintext = function(text) {
-        return text ? String(text).replace(/<[^>]+>/gm, '') : '';
-    };
-
-    /!**
-     * toaster封装
-     * @param type success,info,error
-     * @param body 内容
-     *!/
-    service.toast = function (type, body) {
-
-        toaster.pop({
-            type: type, body: body});
-    };
-
-    /!**
-     * 判断字段是否为 ''、null、undefined
-     * @param param 某个值或者数组
-     * @returns {boolean}
-     *!/
-    service.isValid = function (param) {
-        var value = true;
-        if (Array.isArray(param)) {
-            for (var i = 0; i < param.length; i++) {
-                value = value && param[i];
-            }
-        } else {
-            value = value && param;
-        }
-        return !value;
-    };
-
-    return service;
-});*/
 
 
 /**

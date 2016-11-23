@@ -100,7 +100,46 @@
 
 	<!-- 问题栏 -->
 	<div class="que-menu" ng-class="{true : 'active'}[queActive==1]">
-		
+
+		<ul class="que-list">
+			<li>
+				<div class="que-clear">
+					<i class="fa fa-trash-o fa-2x" aria-hidden="true"></i>
+					<span>清空问题</span>
+				</div>
+			</li>
+
+			<li  ng-repeat="que in ques.userActive">
+				<div class="que-wrapper">
+					<div class="que-header">
+						<div class="avatar">
+							<img src="http://products-test.zhuzhu.com/static/img/microhead/1609/061103255117.jpg" alt="">
+						</div>
+						<div class="info">
+							<span class="nick">{{que.nick}}</span>
+							<span class="address">地址：{{que.address}}</span>
+						</div>
+					</div>
+					<div class="que-content">
+						<div class="content">
+							<span class="content">
+								{{que.content}}
+							</span>
+						</div>
+						<div class="counts">
+							<span class="alert">回答客服人数: 0</span>
+							<span class="alert">回答用户人数: 0</span>
+							<span class="alert">提问时间: 9分钟前</span>
+						</div>
+					</div>
+					<div class="que-footer">
+						<span class="btn btn-ignore">忽略</span>
+						<span class="btn btn-answer">解答</span>
+					</div>
+				</div>
+			</li>
+		</ul>
+
 	</div>
 
 	<!-- 登录弹出框 -->
