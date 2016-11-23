@@ -2,6 +2,7 @@
  * Created by raid on 2016/11/18.
  */
 angular.module('dataService', []).factory('dataService', function () {
+    const CONST_CHAT_INDEX = 'microchat';
 
     var data = {
         users : [],
@@ -17,31 +18,74 @@ angular.module('dataService', []).factory('dataService', function () {
 
         },
 
+        init : init, //初始化dataService，读取localStorage中的数据
+
         addUser : addUser, //添加用户
         removeUser : removeUser, //删除用户
         getUser : getUser, //获取用户
+        getAllLocalUser : getAllLocalUser, //获取所有用户
     };
 
+    function init() {
+        var microchat = JSON.parse(localStorage.getItem(CONST_CHAT_INDEX));
+
+        if (!microchat) {
+            return ;
+        }
+        if (microchat.users) {
+            this.users = microchat.users;
+        }
+        if (microchat.tousers) {
+            this.tousers = microchat.tousers;
+        }
+
+        console.log(this.users);
+
+        return microchat;
+    }
+
     function addUser(user) {
-        // this.users.push(user);
-        this.users[user.uid] = user;
+
+        this.users.push({
+            uid : user.uid,
+            sid : user.sid,
+            nick : user.nick,
+            avatar : user.avatar
+        });
+        save();
     }
 
     function removeUser(uid) {
-        if (!this.users[uid]) {
-            return false;
+        for (var i = 0; i < this.users.length; i++) {
+            if (this.users[i]['uid'] == uid) {
+                this.users.splice(i, 1);
+                save();
+                return true;
+            }
         }
-        this.users.splice(uid, 1);
 
         return false;
     }
 
     function getUser(uid) {
-        if (!this.users[uid]) {
-            return null;
+        for (var i = 0; i < this.users.length; i++) {
+            if (this.users[i]['uid'] == uid) {
+                return this.users[i];
+            }
         }
-        return this.users[uid];
+        return null;
     }
+
+    function getAllLocalUser() {
+
+    }
+
+    function save() {
+        localStorage.setItem(CONST_CHAT_INDEX, JSON.stringify({
+            users : data.users,
+            tousers : data.tousers}));
+    }
+
 
     return data;
 

@@ -23,6 +23,10 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
         $scope.queActive = $scope.queActive ? 0 : 1;
     };
 
+    //初始化dataService
+    // dataService.init();
+
+
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
     $scope.users = dataService.users;
@@ -42,9 +46,6 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
 
     function userLogout(uid) {
         wsService.logout(uid);
-        setTimeout(function () {
-
-        })
     }
 
 

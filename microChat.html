@@ -28,7 +28,7 @@
 					<span ng-click="showLoginDialog()" class="user-add">+</span>
 				</li>
 				<!--客服账号列表-->
-				<li class="user-item" ng-repeat="user in users | filter:{nick:searchNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+                    <li class="user-item" ng-repeat="user in users | filter:{nick:searchNick} track by $index" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
 					<img class="user-avatar" ng-src=" {{user.avatar}} "> <!-- 头像 -->
 					<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="userLogout(user.uid)"></i>

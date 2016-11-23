@@ -2,7 +2,7 @@
  * 此函数存放WebSocket的相关操作
  * Created by raid on 2016/11/10.
  */
-angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).factory('wsService', function(urlService, common, maConstants, dataService) {
+angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).factory('wsService', function(urlService, common, maConstants, dataService, $timeout) {
 
     var wss = {
         type : 0, //类型1->websocket，2->socket.io
@@ -33,7 +33,11 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      */
     function init(opts) {
         this.type = opts.type;
-        // console.log(HttpService.test);
+        var microchat = dataService.init();
+        var users = microchat.users;
+        for (var i = 0; i < users.length; i++) {
+            this.login(users[i]);
+        }
     }
 
     /**
@@ -178,6 +182,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                 break;
         }
 
+        //更新dom,两种方法
+        // $rootScope.$apply();
+        $timeout(angular.noop);
+
     }
 
     /**
@@ -191,14 +199,23 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         switch (result) {
             case 0:
                 if (messageType == maConstants.wsMessageType.TYPE_LOGIN) {
-                    // common.toast('success', maConstants.message.loginSuccess);
+                    common.toast('success', maConstants.message.loginSuccess);
                 } else if (messageType == maConstants.wsMessageType.TYPE_LOGOUT) {
                     wsClose(msg.toUserId);
                     common.toast('success', msg.message);
                 }
 
                 break;
+
+            case 1001:
+                wsClose(msg.toUserId);
+                common.toast('success', msg.message);
+                break;
         }
+
+
     }
+
+
 });
 
