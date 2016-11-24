@@ -432,6 +432,7 @@ ul , li {
 .wrapper .que-menu .que-list .que-wrapper .que-header .info .nick {
 	font-size: 14px;
 	color: #333;
+	padding-bottom: 3px;
 }
 
 .wrapper .que-menu .que-list .que-wrapper .que-header .info .address {

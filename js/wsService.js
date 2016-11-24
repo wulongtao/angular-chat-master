@@ -12,6 +12,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         port : '8381',
 
         addUser : addUser,
+        getUserWaitingQuestions : getUserWaitingQuestions,
 
         getInstance : getInstance,
         init : init,
@@ -34,11 +35,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     function init(opts) {
         this.type = opts.type;
         var microchat = dataService.init();
-        var users = microchat.users;
-        for (var i = 0; i < users.length; i++) {
-            this.login(users[i]);
+
+
+        if (microchat && microchat.users) {
+            var users = microchat.users;
+            for (var i = 0; i < users.length; i++) {
+                this.login(users[i]);
+            }
         }
+
     }
+
 
     /**
      * 获取Websocket对象
@@ -75,6 +82,20 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
             dataService.uiVar.loginParams.userPhone = "";
             dataService.uiVar.loginParams.userPasswd = "";
+        });
+
+    }
+
+    function getUserWaitingQuestions(uid) {
+        var qids = dataService.getQuestions(uid);
+
+        urlService.question.questionsDetail(qids, 1).then(function (data) {
+            if (data.result != 0) {
+                common.toast('info', data.message);
+            }
+            dataService.addQuestionsInfo(data.data);
+            console.log(dataService.questionsInfo);
+            // updateDom();
         });
 
     }
@@ -145,6 +166,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         console.log("onclose");
     }
 
+    /**
+     * 关闭WebSocket
+     * @param uid
+     */
     function wsClose(uid) {
         dataService.removeUser(uid);
         wss.wss[uid] = null;
@@ -185,12 +210,14 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         }
 
-        //更新dom,两种方法
-        // $rootScope.$apply();
-        $timeout(angular.noop);
 
+        updateDom();
     }
 
+    /**
+     * 处理接受到问题的消息
+     * @param msg
+     */
     function handleQuestionNotice(msg) {
 
         //把qid存到每一个客服中
@@ -223,6 +250,15 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         }
 
 
+    }
+
+    /**
+     * 更新dom
+     */
+    function updateDom() {
+        //更新dom,两种方法
+        // $rootScope.$apply();
+        $timeout(angular.noop);
     }
 
 

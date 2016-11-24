@@ -1,34 +1,22 @@
-var app = angular.module("app", ['contenteditable', 'chat', 'dataService']);
+var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common']);
 
-app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope, wsService, dataService) {
+app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', function($scope, wsService, dataService, common) {
 
 
     //初始化wsFactory
     wsService.init({type : 1});
+    //左侧客服用户列表选择
     $scope.userActive = 0;
-
-
-
     $scope.userClick = function(uid) {
         $scope.userActive = uid;
         $scope.queActive = 0;
     };
-    $scope.testInput = "wegweg";
-    $scope.testInputFunc = function() {
-        console.log(Common.htmlToPlaintext($scope.testInput));
-    };
-    $scope.queActive = 0;
-    $scope.showQuestion = function() {
-        $scope.queActive = $scope.queActive ? 0 : 1;
-    };
-
-    //初始化dataService
-    // dataService.init();
 
 
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
     $scope.users = dataService.users;
+    $scope.questionsInfo = dataService.questionsInfo;
     $scope.showLoginDialog = function() {
         dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
     };
@@ -38,6 +26,24 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
     //退出登录
     $scope.userLogout = userLogout;
 
+    //问题相关，问题弹出框
+    $scope.queActive = 0;
+    $scope.showQuestion = function() {
+        if ($scope.userActive === 0) {
+            common.toast('info', '请选择用户');
+            return false;
+        }
+        $scope.queActive = $scope.queActive ? 0 : 1;
+        if ($scope.queActive === 1) {
+            wsService.getUserWaitingQuestions($scope.userActive);
+        }
+    };
+    //问题忽略、解答
+    $scope.queIgnore = function (qid) {
+        dataService.removeQuestion($scope.userActive, qid);
+        dataService.removeQuestionInfo(qid);
+    };
+
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)
@@ -46,6 +52,12 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', function($scope
     function userLogout(uid) {
         wsService.logout(uid);
     }
+
+
+    $scope.testInput = "wegweg";
+    $scope.testInputFunc = function() {
+        console.log(Common.htmlToPlaintext($scope.testInput));
+    };
 
 
 }]);

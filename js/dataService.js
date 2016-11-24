@@ -20,7 +20,7 @@ angular.module('dataService', []).factory('dataService', function () {
 
         },
         //展示在聊天界面中的问题数据
-        questionsInfo : {},
+        questionsInfo : [],
 
         init : init, //初始化dataService，读取localStorage中的数据
 
@@ -35,8 +35,15 @@ angular.module('dataService', []).factory('dataService', function () {
         /**
          * 问题相关操作
          */
+        getQuestions : getQuestions, //获取指定用户的问题列表
         addQuestion : addQuestion, //添加问题
         removeQuestion : removeQuestion, //删除问题
+
+        /**
+         *  展示问题相关操作
+         */
+        addQuestionsInfo : addQuestionsInfo,
+        removeQuestionInfo : removeQuestionInfo,
 
     };
 
@@ -90,6 +97,13 @@ angular.module('dataService', []).factory('dataService', function () {
         return null;
     }
 
+    function getQuestions(uid) {
+        var index = CONST_QUE_INDEX + uid;
+        if (!this.questions[index]) {
+            return null;
+        }
+        return this.questions[index];
+    }
 
     function addQuestion(uid, qid) {
         var index = CONST_QUE_INDEX + uid;
@@ -113,6 +127,20 @@ angular.module('dataService', []).factory('dataService', function () {
         this.questions[index].splice(k, 1);
         save();
         return true;
+    }
+
+    function addQuestionsInfo(questionsInfo) {
+        this.questionsInfo.length = 0; //
+        for (var i = 0; i < questionsInfo.length; i++) {
+            this.questionsInfo.push(questionsInfo[i]);
+        }
+    }
+    function removeQuestionInfo(qid) {
+        for (var i = 0; i < this.questionsInfo.length; i++) {
+            if (this.questionsInfo[i].qid == qid) {
+                this.questionsInfo.splice(i, 1);
+            }
+        }
     }
 
     function save() {
