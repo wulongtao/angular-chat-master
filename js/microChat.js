@@ -5,20 +5,36 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', funct
 
     //初始化wsFactory
     wsService.init({type : 1});
-    //左侧客服用户列表选择
-    $scope.userActive = 0;
-    $scope.userClick = function(uid) {
-        $scope.userActive = uid;
-        $scope.queActive = 0;
-    };
-
 
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
     $scope.users = dataService.users;
+    $scope.tousers = dataService.tousers[$scope.userActive];
     $scope.questionsInfo = dataService.questionsInfo;
     $scope.showLoginDialog = function() {
         dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
+    };
+
+    //左侧客服用户列表选择
+    $scope.userClick = function(uid) {
+        dataService.uiVar.userActive = uid;
+        dataService.uiVar.queActive = 0;
+        $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
+    };
+    //右侧对方用户列表选择
+    $scope.touser = {
+        nick : '猪猪微答',
+        avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
+        content : '客服聊天系统',
+    };
+    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid) {
+        dataService.uiVar.touserActive.uid = uid;
+        dataService.uiVar.touserActive.qid = qid;
+        $scope.touser.nick = nick;
+        $scope.touser.avatar = avatar;
+        $scope.touser.content = content;
+        $scope.touser.contentType = contentType;
+        $scope.touser.address = address;
     };
 
     //登录
@@ -27,23 +43,32 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', funct
     $scope.userLogout = userLogout;
 
     //问题相关，问题弹出框
-    $scope.queActive = 0;
     $scope.showQuestion = function() {
-        if ($scope.userActive === 0) {
+        if ($scope.uiVar.userActive === 0) {
             common.toast('info', '请选择用户');
             return false;
         }
-        $scope.queActive = $scope.queActive ? 0 : 1;
-        if ($scope.queActive === 1) {
-            wsService.getUserWaitingQuestions($scope.userActive);
+        dataService.uiVar.queActive = dataService.uiVar.queActive ? 0 : 1;
+        if ($scope.uiVar.queActive === 1) {
+            wsService.getUserWaitingQuestions(dataService.uiVar.userActive);
         }
+
+
     };
     //问题忽略、解答
     $scope.queIgnore = function (qid) {
-        dataService.removeQuestion($scope.userActive, qid);
+        dataService.removeQuestion(dataService.uiVar.userActive, qid);
         dataService.removeQuestionInfo(qid);
     };
+    $scope.queAnswer = function (qid, askUserId) {
+        if ($scope.uiVar.userActive === 0) return false;
+        wsService.sendAnswerNotice(qid, askUserId, dataService.uiVar.userActive);
+    };
 
+    $scope.testInput = "wegweg";
+    $scope.testInputFunc = function() {
+        console.log(Common.htmlToPlaintext($scope.testInput));
+    };
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)
@@ -52,12 +77,6 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', funct
     function userLogout(uid) {
         wsService.logout(uid);
     }
-
-
-    $scope.testInput = "wegweg";
-    $scope.testInputFunc = function() {
-        console.log(Common.htmlToPlaintext($scope.testInput));
-    };
 
 
 }]);

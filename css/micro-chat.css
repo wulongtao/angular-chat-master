@@ -125,11 +125,18 @@ ul , li {
 	display: flex;
 	flex-direction: column;
 	margin-left: 10px;
+	align-items: flex-start;
 }
 
 .chat-wrapper .chat-box .chat-title .inner-chat-title .target-user-nick {
 	font-size: 18px;
 	color: #444;
+	margin-bottom: 3px;
+}
+
+.chat-wrapper .chat-box .chat-title .inner-chat-title .target-user-nick .target-user-address {
+	font-size: 12px;
+	color: #BCBCBC;
 	margin-bottom: 3px;
 }
 
@@ -139,6 +146,28 @@ ul , li {
 	padding-left: 25px;
 	background: url("../images/ask-icon.png") no-repeat;
 	background-size: 20px;
+	display: none;
+}
+
+.chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice {
+	font-size: 14px;
+	color: #ffffff;
+	padding-left: 15px;
+	height: 25px;
+	line-height: 23px;
+	width: 60px;
+	background-color: #2ecc71;
+	border-radius: 0 10px 10px 10px;
+	cursor: pointer;
+	display: none;
+}
+
+.chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice:hover {
+	background-color: #55d98d;
+}
+
+.chat-wrapper .chat-box .chat-title .inner-chat-title .active {
+	display: block;
 }
 
 .chat-wrapper .chat-box .chat-main {

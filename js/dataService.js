@@ -6,9 +6,9 @@ angular.module('dataService', []).factory('dataService', function () {
     const CONST_QUE_INDEX = 'question';
 
     var data = {
-        users : [],
-        tousers : [],
-        questions : {},
+        users : [], //客服用户
+        tousers : {}, //聊天的另外一个用户
+        questions : {}, //每个用户分别的问题列表
 
         //界面中用到的变量
         uiVar : {
@@ -17,6 +17,10 @@ angular.module('dataService', []).factory('dataService', function () {
                 userPasswd : ""
             },
             loginDialogActive : false,
+
+            userActive : 0,
+            touserActive : {},
+            queActive : 0,
 
         },
         //展示在聊天界面中的问题数据
@@ -30,6 +34,9 @@ angular.module('dataService', []).factory('dataService', function () {
         addUser : addUser, //添加用户
         removeUser : removeUser, //删除用户
         getUser : getUser, //获取用户
+        addToUser : addToUser, //添加聊天的另外一个用户
+        removeToUser : removeToUser, //删除
+        getToUsers : getToUsers, //获取
 
 
         /**
@@ -59,8 +66,9 @@ angular.module('dataService', []).factory('dataService', function () {
         if (microchat.tousers) {
             this.tousers = microchat.tousers;
         }
-
-        console.log(this.users);
+        if (microchat.questions) {
+            this.questions = microchat.questions;
+        }
 
         return microchat;
     }
@@ -95,6 +103,44 @@ angular.module('dataService', []).factory('dataService', function () {
             }
         }
         return null;
+    }
+
+    function addToUser(uid, touserInfo) {
+        if (!this.tousers[uid]) {
+            this.tousers[uid] = [];
+        }
+        this.tousers[uid].push({
+            uid : touserInfo.uid,
+            nick : touserInfo.nick,
+            avatar : touserInfo.avatar,
+            qid : touserInfo.qid,
+            contentType : touserInfo.contentType,
+            content : touserInfo.content,
+            address : touserInfo.address
+        });
+        save();
+    }
+
+    function removeToUser(uid, touserId) {
+        if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]))
+            return false;
+
+        for (var i = 0; i < this.tousers[uid].length; i++) {
+            if (this.tousers[uid][i].uid === touserId) {
+                this.tousers[uid].splice(i, 1);
+                save();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    function getToUsers(uid) {
+        if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]))
+            return [];
+
+        return this.tousers[uid];
     }
 
     function getQuestions(uid) {

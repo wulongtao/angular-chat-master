@@ -29,7 +29,7 @@
 					<span ng-click="showLoginDialog()" class="user-add">+</span>
 				</li>
 				<!--客服账号列表-->
-                    <li class="user-item" ng-repeat="user in users | filter:{nick:searchNick} track by $index" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+                    <li class="user-item" ng-repeat="user in users | filter:{nick:searchNick} track by $index" ng-class="{true : 'user-active'}[user.uid==uiVar.userActive]" ng-click="userClick(user.uid)">
 					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
 					<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="userLogout(user.uid)"></i>
@@ -41,17 +41,21 @@
 		<div class="chat-box">
 			<!-- 标题栏 -->
 			<div class="chat-title">
-				<img class="target-user-avatar" lazy-img=" {{targetUser.avatar}} ">
+				<img class="target-user-avatar" lazy-img=" {{touser.avatar}} ">
 				<div class="inner-chat-title">
-					<span class="target-user-nick"> {{targetUser.nick}} </span>
-					<span class="problem-content"> {{problem.content}} </span>
+					<span class="target-user-nick"> {{touser.nick}} <span class="target-user-address">(地址: {{touser.address}})</span> </span>
+					<span class="problem-content" ng-class="{true : 'active'}[touser.contentType==2]"> {{touser.content}} </span>
+					<div class="problem-voice" ng-class="{true : 'active'}[touser.contentType==1]">
+						<i class="fa fa-volume-up" aria-hidden="true"></i>
+						<audio src="http://products-test.zhuzhu.com/static/img/upload/zz/microChatData/1611/thumb/151400453720.mp3"></audio>
+					</div>
 				</div>
 			</div>
 			<!-- 聊天内容显示区域 -->
 			<div class="chat-main">
 				<ul>
 					<li ng-repeat="clog in chatLogs">
-						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==userActive]">
+						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
 							<div class="avatar"><img lazy-img=" {{clog.avatar}} "></div>
 							<div class="item-wrapper" >
 								<div class="top" > 
@@ -89,9 +93,10 @@
 					<input class="filter-tool" ng-model="searchTargetNick" type="text">
 					<span ng-click="showQuestion()" class="user-add">？</span>
 				</li>
-				<li class="user-item" ng-repeat="user in userList|filter:{nick:searchTargetNick}" ng-class="{true : 'user-active'}[user.uid==userActive]" ng-click="userClick(user.uid)">
+				<li class="user-item" ng-repeat="user in tousers|filter:{nick:searchTargetNick} track by $index" ng-class="{true : 'user-active'}[user.uid==uiVar.touserActive.uid&&user.qid==uiVar.touserActive.qid]"
+					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid)">
 					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
-					<span class="user-nick"> {{user.nick}} </span>
+						<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true"></i>
 				</li>
 			</ul>
@@ -100,7 +105,7 @@
 	</div>
 
 	<!-- 问题栏 -->
-	<div class="que-menu" ng-class="{true : 'active'}[queActive==1]">
+	<div class="que-menu" ng-class="{true : 'active'}[uiVar.queActive==1]">
 
 		<ul class="que-list">
 			<li>
@@ -135,7 +140,7 @@
 					</div>
 					<div class="que-footer">
 						<span class="btn btn-ignore" ng-click="queIgnore(que.qid)">忽略</span>
-						<span class="btn btn-answer" ng-click="queAnswer(que.qid)">解答</span>
+						<span class="btn btn-answer" ng-click="queAnswer(que.qid, que.userInfo.userId)">解答</span>
 					</div>
 				</div>
 			</li>

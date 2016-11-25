@@ -6,6 +6,7 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
     var service = {
         user : { //用户相关
             add : addUser, //客服帐号登录
+            userQuestionInfo : getUserQuestionInfo, //获取用户信息
         },
         question : { //问题相关
             questionsDetail : getQuestionsDetail,
@@ -30,6 +31,16 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
         ).then(function (data) {
             return data;
         });
+    }
+
+    function getUserQuestionInfo(uid, qid) {
+        uid = parseInt(uid);
+        if (!uid || !qid) return false;
+
+        return httpService.get("http://weida.products-test.zhuzhu.com/?_c=microAnswerOperator&_a=userQuestionInfo&uid="+uid+"&qid="+qid)
+            .then(function (data) {
+                return data;
+            });
     }
 });
 

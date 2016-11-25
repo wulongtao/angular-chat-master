@@ -11,7 +11,8 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         host : '113.108.232.194',
         port : '8381',
 
-        addUser : addUser,
+        addUser : addUser, //添加客服用户
+        addToUser : addToUser, //添加回答用户
         getUserWaitingQuestions : getUserWaitingQuestions,
 
         getInstance : getInstance,
@@ -22,7 +23,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         onmessage : onmessage,
         onclose : onclose,
         // wsClose : wsClose,
-        sendMsg : sendMsg,
+        sendMsg : sendMsg, //发送消息
+        sendAnswerNotice : sendAnswerNotice, //发送解答问题消息
+        sendClientNotice : sendClientNotice, //发送type=6
 
     };
 
@@ -86,16 +89,42 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
     }
 
+    function addToUser(uid, qid, touserId) {
+        urlService.user.userQuestionInfo(touserId, qid).then(function (data) {
+            if (data.result != 0) {
+                common.toast('info', data.message);
+            }
+            var userInfo = data.data.userInfo;
+            var questionInfo = data.data.questionInfo;
+            console.log(data);
+            dataService.addToUser(uid, {
+                uid : userInfo.uid,
+                nick : userInfo.nick,
+                avatar : userInfo.avatar,
+                qid : questionInfo.qid,
+                contentType : questionInfo.contentType,
+                content : questionInfo.content,
+                address : questionInfo.address
+            });
+        });
+    }
+
+    /**
+     * 获取等待回答的问题的信息
+     * @param uid
+     * @returns {boolean}
+     */
     function getUserWaitingQuestions(uid) {
         var qids = dataService.getQuestions(uid);
+        if (!qids || qids.length == 0) {
+            return false;
+        }
 
         urlService.question.questionsDetail(qids, 1).then(function (data) {
             if (data.result != 0) {
                 common.toast('info', data.message);
             }
             dataService.addQuestionsInfo(data.data);
-            console.log(dataService.questionsInfo);
-            // updateDom();
         });
 
     }
@@ -110,6 +139,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         if (this.wss[uid] == null) {
             this.wss[uid] = this.getInstance();
+            this.wss[uid].clientId = uid;
         }
 
         this.wss[uid].onopen = function () {
@@ -145,7 +175,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             uid : user.uid,
             sid : user.sid
         };
-        console.log(user);
         this.sendMsg(user.uid, loginUser);
     }
 
@@ -155,6 +184,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      */
     function onmessage(msg) {
         msg = JSON.parse(msg.data);
+        msg.toUserId = this.clientId;
         console.log(msg);
         handleMessage(msg);
     }
@@ -164,6 +194,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
      */
     function onclose() {
         console.log("onclose");
+        dataService.removeUser(this.clientId);
+        if (!this.wss[this.clientId]) this.wss[this.clientId] = null;
+        common.toast('info', '帐号已在其他设备登录');
     }
 
     /**
@@ -187,8 +220,38 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             ws.send(JSON.stringify(msg));
             return true;
         } else {
+            common.toast('info', '发送信息太快，请稍后再发送');
             return false;
         }
+    }
+
+    /**
+     * 发送type=6的clientNotice给服务器
+     * @param uid
+     * @param msg
+     * @returns {boolean}
+     */
+    function sendClientNotice(uid, msg) {
+        var user = dataService.getUser(uid);
+        msg.uid = user.uid;
+        msg.sid = user.sid;
+        msg.messageType = msg.type;
+        msg.type = maConstants.wsMessageType.TYPE_CLIENT_NOTICE;
+        this.sendMsg(uid, msg);
+    }
+
+    function sendAnswerNotice(qid, askUserId, targetUserId) {
+        var user = dataService.getUser(targetUserId);
+        var msg = {
+            type : maConstants.wsMessageType.TYPE_ANSWER_NOTICE,
+            uid : user.uid,
+            sid : user.sid,
+            qid : qid,
+            askUserId : askUserId,
+            targetUserId : askUserId,
+            messageId : askUserId, //带上messageId，服务器返回的时候顺便返回知道askUserId
+        };
+        this.sendMsg(user.uid, msg);
     }
 
 
@@ -222,6 +285,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         //把qid存到每一个客服中
         dataService.addQuestion(msg.toUserId, msg.qid);
+        wss.sendClientNotice(msg.toUserId, {type:msg.type,randId:msg.randId,qid:msg.qid});
     }
 
     /**
@@ -234,11 +298,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         switch (result) {
             case 0:
-                if (messageType == maConstants.wsMessageType.TYPE_LOGIN) {
+                if (messageType === maConstants.wsMessageType.TYPE_LOGIN) {
                     common.toast('success', maConstants.message.loginSuccess);
-                } else if (messageType == maConstants.wsMessageType.TYPE_LOGOUT) {
+                } else if (messageType === maConstants.wsMessageType.TYPE_LOGOUT) {
                     wsClose(msg.toUserId);
                     common.toast('success', msg.message);
+                } else if (messageType === maConstants.wsMessageType.TYPE_ANSWER_NOTICE) {
+                    wss.addToUser(msg.toUserId, msg.qid, msg.messageId);
+
+                    //收到解答成功之后删除问题列表中的问题
+                    dataService.removeQuestion(msg.toUserId, msg.qid);
+                    dataService.removeQuestionInfo(msg.qid);
                 }
 
                 break;
@@ -246,6 +316,12 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             case 1001:
                 wsClose(msg.toUserId);
                 common.toast('success', msg.message);
+                break;
+
+            case 1006:
+                common.toast('info', msg.message);
+                dataService.removeQuestion(msg.toUserId, msg.qid);
+                dataService.removeQuestionInfo(msg.qid);
                 break;
         }
 
