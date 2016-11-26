@@ -1,6 +1,6 @@
 var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants', 'ngAudio']);
 
-app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants) {
+app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants, ngAudio) {
 
 
     //初始化wsFactory

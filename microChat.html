@@ -46,7 +46,7 @@
 				<div class="inner-chat-title">
 					<span class="target-user-nick"> {{touser.nick}} <br> <span class="target-user-address">(地址: {{touser.address}})</span> </span>
 					<span class="problem-content" ng-class="{true : 'active'}[touser.contentType==contentType.TYPE_TEXT]"> {{touser.content}} </span>
-					<div class="problem-voice" ng-class="{true : 'active'}[touser.contentType==contentType.TYPE_AUDIO]" ng-audio="{{touser.contentType}}" volume-hover="0.5" start-hover="0.2">
+					<div class="problem-voice" ng-class="{true : 'active'}[touser.contentType==contentType.TYPE_AUDIO]" ng-audio="{{touser.content}}" volume-hover="0.5" start-hover="0.2">
 						<i class="fa fa-volume-up" aria-hidden="true"></i>
 					</div>
 				</div>
