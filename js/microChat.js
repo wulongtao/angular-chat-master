@@ -1,6 +1,6 @@
-var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common']);
+var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants', 'ngAudio']);
 
-app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', function($scope, wsService, dataService, common) {
+app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants) {
 
 
     //初始化wsFactory
@@ -11,6 +11,7 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', funct
     $scope.users = dataService.users;
     $scope.tousers = dataService.tousers[$scope.userActive];
     $scope.questionsInfo = dataService.questionsInfo;
+    $scope.contentType = maConstants.contentType;
     $scope.showLoginDialog = function() {
         dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
     };

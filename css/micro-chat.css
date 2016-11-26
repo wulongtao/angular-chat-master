@@ -106,7 +106,7 @@ ul , li {
 
 .chat-wrapper .chat-box .chat-title {
 	width: 100%;
-	height: 80px;
+	height: 90px;
 	background-color: rgba(245,245,245,.7);
 	color: #333;
 	border-radius: 2px 2px 0 0;
@@ -129,7 +129,7 @@ ul , li {
 }
 
 .chat-wrapper .chat-box .chat-title .inner-chat-title .target-user-nick {
-	font-size: 18px;
+	/*font-size: 18px;*/
 	color: #444;
 	margin-bottom: 3px;
 }
@@ -552,6 +552,7 @@ ul , li {
 }
 
 .md.md-effect {
+	visibility: hidden;
 	-webkit-transform: scale(0.7);
 	-moz-transform: scale(0.7);
 	-ms-transform: scale(0.7);
@@ -562,7 +563,7 @@ ul , li {
 	transition: all 0.3s;
 } 
 
- .md.md-active {
+.md.md-active {
 	visibility: visible;
 	opacity: 1;
 } 

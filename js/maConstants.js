@@ -32,6 +32,12 @@ angular.module('maConstants', []).factory('maConstants', function () {
         },
 
 
+        contentType : { //内容类型
+            TYPE_TEXT : 1, //文字
+            TYPE_IMAGE : 2, //图片
+            TYPE_AUDIO : 3, //语音
+        },
+
 
 
     };
