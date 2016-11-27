@@ -314,11 +314,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                 break;
 
             case 1001:
-                wsClose(msg.toUserId);
-                common.toast('success', msg.message);
+                wsClose(msg.toUserId); //登录过期
+                common.toast('info', msg.message);
                 break;
 
-            case 1006:
+            case 1002:
+                common.toast('info', msg.message);
+                dataService.removeQuestion(msg.toUserId, msg.qid);
+                dataService.removeQuestionInfo(msg.qid);
+                break;
+
+            case 1006: //已回答过问题
                 common.toast('info', msg.message);
                 dataService.removeQuestion(msg.toUserId, msg.qid);
                 dataService.removeQuestionInfo(msg.qid);

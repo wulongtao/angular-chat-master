@@ -10,7 +10,6 @@
 
 	<script type="text/javascript" src="js/lib/angular.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-contenteditable.js"></script>
-	<script type="text/javascript" src="js/lib/angular.audio.js"></script>
 	<script type="text/javascript" src="js/lib/angular-animate.min.js"></script>
 	<script type="text/javascript" src="js/lib/toaster.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-lazy-img.min.js"></script>
@@ -45,8 +44,11 @@
 				<img class="target-user-avatar" lazy-img=" {{touser.avatar}} ">
 				<div class="inner-chat-title">
 					<span class="target-user-nick"> {{touser.nick}} <br> <span class="target-user-address">(地址: {{touser.address}})</span> </span>
-					<span class="problem-content" ng-class="{true : 'active'}[touser.contentType==contentType.TYPE_TEXT]"> {{touser.content}} </span>
-					<div class="problem-voice" ng-class="{true : 'active'}[touser.contentType==contentType.TYPE_AUDIO]" ng-audio="{{touser.content}}" volume-hover="0.5" start-hover="0.2">
+					<span class="problem-content" ng-if="touser.contentType==contentType.TYPE_TEXT"> {{touser.content}} </span>
+					<div class="problem-voice" ng-if="touser.contentType==contentType.TYPE_AUDIO" ng-click="playQAudio">
+                        <audio id="qAudio">
+                            <source ng-src="{{touser.content}}">
+                        </audio>
 						<i class="fa fa-volume-up" aria-hidden="true"></i>
 					</div>
 				</div>

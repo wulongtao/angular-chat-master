@@ -1,6 +1,6 @@
-var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants', 'ngAudio']);
+var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants']);
 
-app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants, ngAudio) {
+app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants) {
 
 
     //初始化wsFactory
@@ -27,6 +27,7 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
         nick : '猪猪微答',
         avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
         content : '客服聊天系统',
+        contentType : maConstants.contentType.TYPE_TEXT,
     };
     $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid) {
         dataService.uiVar.touserActive.uid = uid;
@@ -36,6 +37,13 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
         $scope.touser.content = content;
         $scope.touser.contentType = contentType;
         $scope.touser.address = address;
+    };
+
+    //播放语音相关
+    $scope.playQAudio = function () {
+        var audio = document.getElementById("qAudio");
+        audio.load();
+        audio.play();
     };
 
     //登录

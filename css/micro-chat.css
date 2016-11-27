@@ -146,7 +146,6 @@ ul , li {
 	padding-left: 25px;
 	background: url("../images/ask-icon.png") no-repeat;
 	background-size: 20px;
-	display: none;
 }
 
 .chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice {
@@ -159,7 +158,6 @@ ul , li {
 	background-color: #2ecc71;
 	border-radius: 0 10px 10px 10px;
 	cursor: pointer;
-	display: none;
 }
 
 .chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice:hover {
