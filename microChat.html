@@ -6,6 +6,7 @@
 	<link rel="stylesheet" type="text/css" href="css/lib/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/initialize.min.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/toaster.min.css">
+	<link rel="stylesheet" type="text/css" href="css/lib/emoji.css">
 	<link rel="stylesheet" type="text/css" href="css/micro-chat.css">
 
 	<script type="text/javascript" src="js/lib/angular.min.js"></script>
@@ -13,6 +14,7 @@
 	<script type="text/javascript" src="js/lib/angular-animate.min.js"></script>
 	<script type="text/javascript" src="js/lib/toaster.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-lazy-img.min.js"></script>
+	<script type="text/javascript" src="js/lib/angular-sanitize.min.js"></script>
 
 </head>
 <body style="margin: 20px;">
@@ -44,19 +46,20 @@
 				<img class="target-user-avatar" lazy-img=" {{touser.avatar}} ">
 				<div class="inner-chat-title">
 					<span class="target-user-nick"> {{touser.nick}} <br> <span class="target-user-address">(地址: {{touser.address}})</span> </span>
-					<span class="problem-content" ng-if="touser.contentType==contentType.TYPE_TEXT"> {{touser.content}} </span>
-					<div class="problem-voice" ng-if="touser.contentType==contentType.TYPE_AUDIO" ng-click="playQAudio">
-                        <audio id="qAudio">
-                            <source ng-src="{{touser.content}}">
+					<span class="que-content" ng-if="touser.contentType==contentType.TYPE_TEXT" ng-bind-html="deliberatelyTrustDangerousSnippet(touser.content)"></span>
+					<div class="que-voice" ng-if="touser.contentType==contentType.TYPE_AUDIO" ng-click="playQAudio()">
+                        <audio class="qAudio">
+                            <source ng-src="{{touser.content | trustUrl}}">
                         </audio>
 						<i class="fa fa-volume-up" aria-hidden="true"></i>
 					</div>
+
 				</div>
 			</div>
 			<!-- 聊天内容显示区域 -->
 			<div class="chat-main">
 				<ul>
-					<li ng-repeat="clog in chatLogs">
+					<li ng-repeat="clog in chatlogInfo">
 						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
 							<div class="avatar"><img lazy-img=" {{clog.avatar}} "></div>
 							<div class="item-wrapper" >
@@ -79,11 +82,11 @@
 					<input type="file" id="chatImg" name="" style="display: none;">
 				</label>
 			</div>
-			<div ng-model="testInput" class="chat-textarea" contenteditable="true" ng-model="model"  select-non-editable="true">
+			<div ng-model="userSend.content" class="chat-textarea" contenteditable="true" ng-model="model"  select-non-editable="true" ng-enter="sendMessage()">
 			</div>
 			<!-- 聊天框尾部 -->
 			<div class="chat-footer">
-				<span class="btn-send" ng-click="testInputFunc()">发送</span>
+				<span class="btn-send" ng-click="sendMessage()">发送</span>
 			</div>
 		</div>
 
@@ -99,7 +102,7 @@
 					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid)">
 					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
 						<span class="user-nick"> {{user.nick}} </span>
-					<i class="fa fa-times-circle fa-lg" aria-hidden="true"></i>
+					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid)"></i>
 				</li>
 			</ul>
 		</div>
@@ -129,10 +132,13 @@
 						</div>
 					</div>
 					<div class="que-content">
-						<div class="content">
-							<span class="content">
-								{{que.content}}
-							</span>
+						<div class="content" ng-if="que.contentType==contentType.TYPE_TEXT" ng-bind-html="deliberatelyTrustDangerousSnippet(que.content)">
+						</div>
+						<div class="que-voice" ng-if="que.contentType==contentType.TYPE_AUDIO" ng-click="playQAudio()">
+							<audio class="qAudio">
+								<source ng-src="{{que.content | trustUrl}}">
+							</audio>
+							<i class="fa fa-volume-up" aria-hidden="true"></i>
 						</div>
 						<div class="counts">
 							<span class="alert">回答客服人数: {{que.clientUsers}}</span>

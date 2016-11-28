@@ -24,6 +24,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         onclose : onclose,
         // wsClose : wsClose,
         sendMsg : sendMsg, //发送消息
+        sendChatMsg : sendChatMsg, //发送聊天消息
         sendAnswerNotice : sendAnswerNotice, //发送解答问题消息
         sendClientNotice : sendClientNotice, //发送type=6
 
@@ -224,6 +225,39 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             return false;
         }
     }
+    
+    function sendChatMsg(uid, touserId, contentType, content, qid) {
+        qid = typeof qid !== 'undefined' ?  qid : 0;
+
+        var userInfo = dataService.getUser(uid);
+        var touserInfo = dataService.getToUser(uid, touserId);
+        if (!userInfo || !userInfo['uid'] || !touserInfo || !touserInfo['uid']) {
+            common.toast('info', '请选择用户再发送消息');
+        }
+
+        var data = {
+            type : maConstants.wsMessageType.TYPE_SAY,
+            uid : userInfo['uid'],
+            targetUserId : touserInfo['uid'],
+            sid : userInfo['sid'],
+            content : common.htmlToPlaintext(content),
+            contentType : contentType,
+        };
+
+        if (qid !== 0) {
+            data.qid = qid;
+            data.askUserId = touserId;
+        }
+
+        dataService.chatlog(userInfo['uid'], touserInfo['uid'], qid, {
+            uid:userInfo['uid'],
+            toUserId : touserInfo['uid'],
+            qid : qid,
+
+        });
+
+        this.sendMsg(uid, data);
+    }
 
     /**
      * 发送type=6的clientNotice给服务器
@@ -332,6 +366,11 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         }
 
 
+    }
+    
+    function getMessageId(messageId) {
+        var messageIdArr = messageId.split('_');
+        return {id : messageIdArr[0], addTime : messageIdArr[1]};
     }
 
     /**

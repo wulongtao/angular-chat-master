@@ -4,11 +4,15 @@
 angular.module('dataService', []).factory('dataService', function () {
     const CONST_CHAT_INDEX = 'microchat';
     const CONST_QUE_INDEX = 'question';
+    const CONST_CHATLOG_INDEX = 'chatlog'
+    const CONST_USER_INDEX = 'user';
+    const CONST_TOUSER_INDEX = 'touser';
 
     var data = {
         users : [], //客服用户
         tousers : {}, //聊天的另外一个用户
         questions : {}, //每个用户分别的问题列表
+        chatlogs : {},
 
         //界面中用到的变量
         uiVar : {
@@ -23,8 +27,12 @@ angular.module('dataService', []).factory('dataService', function () {
             queActive : 0,
 
         },
+
+
         //展示在聊天界面中的问题数据
         questionsInfo : [],
+        //展示在聊天页面中的聊天记录
+        chatlogInfo : [],
 
         init : init, //初始化dataService，读取localStorage中的数据
 
@@ -36,6 +44,7 @@ angular.module('dataService', []).factory('dataService', function () {
         getUser : getUser, //获取用户
         addToUser : addToUser, //添加聊天的另外一个用户
         removeToUser : removeToUser, //删除
+        getToUser : getToUser, //获取
         getToUsers : getToUsers, //获取
 
 
@@ -51,6 +60,11 @@ angular.module('dataService', []).factory('dataService', function () {
          */
         addQuestionsInfo : addQuestionsInfo,
         removeQuestionInfo : removeQuestionInfo,
+
+        /**
+         * 聊天记录相关操作
+         */
+        chatlog : chatlog, //添加或者获取聊天记录
 
     };
 
@@ -122,6 +136,7 @@ angular.module('dataService', []).factory('dataService', function () {
     }
 
     function removeToUser(uid, touserId) {
+
         if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]))
             return false;
 
@@ -134,6 +149,19 @@ angular.module('dataService', []).factory('dataService', function () {
         }
 
         return false;
+    }
+
+    function getToUser(uid, touserId) {
+        if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]) || this.tousers.length === 0)
+            return null;
+
+        for (var i = 0; i < this.tousers[uid].length; i++) {
+            if (touserId == this.tousers[uid][i].uid) {
+                return this.tousers[uid][i];
+            }
+        }
+
+        return null;
     }
 
     function getToUsers(uid) {
@@ -189,11 +217,48 @@ angular.module('dataService', []).factory('dataService', function () {
         }
     }
 
+    /**
+     * 添加或者获取chatlogs
+     * @param uid
+     * @param toUserId
+     * @param qid
+     * @param chatlog 不传为获取
+     */
+    function chatlog(uid, toUserId, qid, chatlog) {
+        chatlog = typeof chatlog !== 'undefined' ?  chatlog : null;
+
+        if (chatlog === null) {
+            if (!this.chatlogs[uid] || !this.chatlogs[uid][toUserId]
+                || !this.chatlogs[uid][toUserId][qid] || !Array.isArray(this.chatlogs[uid][toUserId][qid])) {
+                return null;
+            }
+
+            return this.chatlogs[uid][toUserId][qid];
+
+        } else {
+            //判断+创建
+            if (this.chatlogs[uid] === undefined) {
+                this.chatlogs[uid] = {};
+            }
+            if (this.chatlogs[uid][toUserId] === undefined) {
+                this.chatlogs[uid][toUserId] = {};
+            }
+            if (this.chatlogs[uid][toUserId][qid] == undefined || !Array.isArray(this.chatlogs[uid][toUserId][qid])) {
+                this.chatlogs[uid][toUserId][qid] = [];
+            }
+
+            this.chatlogs[uid][toUserId][qid].push(chatlog);
+            save();
+        }
+    }
+
+
     function save() {
         localStorage.setItem(CONST_CHAT_INDEX, JSON.stringify({
             users : data.users,
             tousers : data.tousers,
-            questions : data.questions
+            questions : data.questions,
+            chatlogs : data.chatlogs,
         }));
     }
 

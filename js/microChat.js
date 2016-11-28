@@ -1,10 +1,11 @@
-var app = angular.module("app", ['contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants']);
 
-app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maConstants', function($scope, wsService, dataService, common, maConstants) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', function($scope, $sce, wsService, dataService, common, maConstants) {
 
 
     //初始化wsFactory
     wsService.init({type : 1});
+    initParams();
 
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
@@ -22,26 +23,31 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
         dataService.uiVar.queActive = 0;
         $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
     };
+
     //右侧对方用户列表选择
-    $scope.touser = {
-        nick : '猪猪微答',
-        avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
-        content : '客服聊天系统',
-        contentType : maConstants.contentType.TYPE_TEXT,
-    };
     $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid) {
         dataService.uiVar.touserActive.uid = uid;
         dataService.uiVar.touserActive.qid = qid;
+        $scope.touser.uid = uid;
+        $scope.touser.qid = qid;
         $scope.touser.nick = nick;
         $scope.touser.avatar = avatar;
         $scope.touser.content = content;
         $scope.touser.contentType = contentType;
         $scope.touser.address = address;
     };
+    //删除右侧对方用户列表
+    $scope.rmToUser = function (uid) {
+        var rs = dataService.removeToUser(dataService.uiVar.userActive, uid);
+        if (rs === false) {
+            common.toast('info', '删除失败，请刷新页面后重试');
+        }
+        initParams();
+    };
 
     //播放语音相关
     $scope.playQAudio = function () {
-        var audio = document.getElementById("qAudio");
+        var audio = document.getElementsByClassName("qAudio")[0];
         audio.load();
         audio.play();
     };
@@ -61,9 +67,12 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
         if ($scope.uiVar.queActive === 1) {
             wsService.getUserWaitingQuestions(dataService.uiVar.userActive);
         }
-
-
     };
+    //解析html字符串
+    $scope.deliberatelyTrustDangerousSnippet = function(content) {
+        return $sce.trustAsHtml(content);
+    };
+
     //问题忽略、解答
     $scope.queIgnore = function (qid) {
         dataService.removeQuestion(dataService.uiVar.userActive, qid);
@@ -74,9 +83,9 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
         wsService.sendAnswerNotice(qid, askUserId, dataService.uiVar.userActive);
     };
 
-    $scope.testInput = "wegweg";
-    $scope.testInputFunc = function() {
-        console.log(Common.htmlToPlaintext($scope.testInput));
+    //用户发送文字消息
+    $scope.sendMessage = function() {
+        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, $scope.userSend.content, $scope.touser.qid);
     };
 
     function doLogin(phone, passwd) {
@@ -85,6 +94,29 @@ app.controller("CtlChat", ['$scope', 'wsService', 'dataService', 'common', 'maCo
 
     function userLogout(uid) {
         wsService.logout(uid);
+    }
+
+    function initParams() {
+        //聊天标题栏
+        $scope.touser = {
+            uid : 0,
+            qid : 0,
+            nick : '猪猪微答',
+            avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
+            content : '客服聊天系统',
+            contentType : maConstants.contentType.TYPE_TEXT,
+            address : '',
+        };
+
+
+        //消息发送
+        $scope.userSend = {
+            content : "",
+            contentType : maConstants.contentType.TYPE_TEXT,
+        };
+
+        //聊天记录
+        $scope.chatlogInfo = data.chatlogInfo;
     }
 
 
@@ -107,3 +139,9 @@ app.directive('ngEnter', function () {
         });
     };
 });
+
+app.filter("trustUrl", ['$sce', function ($sce) {
+    return function (recordingUrl) {
+        return $sce.trustAsResourceUrl(recordingUrl);
+    };
+}]);

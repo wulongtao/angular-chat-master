@@ -7,6 +7,7 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
         toast : toast,
         isValid : isValid,
         htmlToPlaintext : htmlToPlaintext,
+        getCurrentTime : getCurrentTime,
     };
 
     /**
@@ -43,6 +44,10 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
     function htmlToPlaintext(text) {
         return text ? String(text).replace(/<[^>]+>/gm, '') : '';
     };
+
+    function getCurrentTime() {
+        return new Date().getTime() / 1000;
+    }
 
 
     return common;

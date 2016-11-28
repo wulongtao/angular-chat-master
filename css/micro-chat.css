@@ -140,7 +140,7 @@ ul , li {
 	margin-bottom: 3px;
 }
 
-.chat-wrapper .chat-box .chat-title .inner-chat-title .problem-content {
+.chat-wrapper .chat-box .chat-title .inner-chat-title .que-content {
 	font-size: 14px;
 	color: #BCBCBC;
 	padding-left: 25px;
@@ -148,7 +148,7 @@ ul , li {
 	background-size: 20px;
 }
 
-.chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice {
+.chat-wrapper .chat-box .chat-title .inner-chat-title .que-voice {
 	font-size: 14px;
 	color: #ffffff;
 	padding-left: 15px;
@@ -160,7 +160,7 @@ ul , li {
 	cursor: pointer;
 }
 
-.chat-wrapper .chat-box .chat-title .inner-chat-title .problem-voice:hover {
+.chat-wrapper .chat-box .chat-title .inner-chat-title .que-voice:hover {
 	background-color: #55d98d;
 }
 
@@ -475,6 +475,19 @@ ul , li {
 
 .wrapper .que-menu .que-list .que-wrapper .que-content .content {
 	margin-bottom: 5px;
+}
+
+.wrapper .que-menu .que-list .que-wrapper .que-content .que-voice {
+	font-size: 14px;
+	color: #ffffff;
+	padding-left: 15px;
+	height: 25px;
+	line-height: 23px;
+	width: 60px;
+	background-color: #2ecc71;
+	border-radius: 0 10px 10px 10px;
+	cursor: pointer;
+	margin-bottom: 7px;
 }
 
 .wrapper .que-menu .que-list .que-wrapper .que-content .counts {
