@@ -97,7 +97,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             }
             var userInfo = data.data.userInfo;
             var questionInfo = data.data.questionInfo;
-            console.log(data);
             dataService.addToUser(uid, {
                 uid : userInfo.uid,
                 nick : userInfo.nick,
@@ -235,13 +234,16 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             common.toast('info', '请选择用户再发送消息');
         }
 
+        content = common.htmlToPlaintext(content);
+
         var data = {
             type : maConstants.wsMessageType.TYPE_SAY,
             uid : userInfo['uid'],
             targetUserId : touserInfo['uid'],
             sid : userInfo['sid'],
-            content : common.htmlToPlaintext(content),
+            content : content,
             contentType : contentType,
+            messageId : createMessageId(touserInfo['uid']),
         };
 
         if (qid !== 0) {
@@ -251,9 +253,13 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
         dataService.chatlog(userInfo['uid'], touserInfo['uid'], qid, {
             uid:userInfo['uid'],
+            nick : userInfo['nick'],
+            avatar : userInfo['avatar'],
             toUserId : touserInfo['uid'],
             qid : qid,
-
+            contentType : contentType,
+            content : content,
+            addTime : common.getCurrentTime(),
         });
 
         this.sendMsg(uid, data);
@@ -323,7 +329,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     }
 
     /**
-     * 服务端消息通知，比如通知客户端已接收到消息
+     * 服务端消息通知，比如通知客户端已接收到消息 type=5
      * @param msg
      */
     function handleServiceNotice(msg) {
@@ -337,12 +343,22 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                 } else if (messageType === maConstants.wsMessageType.TYPE_LOGOUT) {
                     wsClose(msg.toUserId);
                     common.toast('success', msg.message);
+                } else if (messageType === maConstants.wsMessageType.TYPE_SAY) {
+                    var uid = msg.toUserId;
+                    var toUserId = parseMessageId(msg.messageId).id;
+                    var qid = msg.qid;
+
+                    console.log(dataService.chatlog(uid, toUserId, qid));
+
                 } else if (messageType === maConstants.wsMessageType.TYPE_ANSWER_NOTICE) {
                     wss.addToUser(msg.toUserId, msg.qid, msg.messageId);
 
                     //收到解答成功之后删除问题列表中的问题
                     dataService.removeQuestion(msg.toUserId, msg.qid);
                     dataService.removeQuestionInfo(msg.qid);
+
+                    //焦点到toUserId那
+                    dataService.uiVar.userActive = msg.toUserId;
                 }
 
                 break;
@@ -367,10 +383,21 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
 
 
     }
-    
-    function getMessageId(messageId) {
+
+
+    /**
+     * 解析messageId
+     * @param messageId
+     * @returns {{id: *, addTime: *}}
+     */
+    function parseMessageId(messageId) {
         var messageIdArr = messageId.split('_');
         return {id : messageIdArr[0], addTime : messageIdArr[1]};
+    }
+
+    function createMessageId(id) {
+        var messageId = id + "_" + common.getCurrentTime();
+        return messageId;
     }
 
     /**

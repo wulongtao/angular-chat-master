@@ -102,7 +102,7 @@
 					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid)">
 					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
 						<span class="user-nick"> {{user.nick}} </span>
-					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid)"></i>
+					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid, user.qid)"></i>
 				</li>
 			</ul>
 		</div>

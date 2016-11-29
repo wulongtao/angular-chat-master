@@ -83,6 +83,9 @@ angular.module('dataService', []).factory('dataService', function () {
         if (microchat.questions) {
             this.questions = microchat.questions;
         }
+        if (microchat.chatlogs) {
+            this.chatlogs = microchat.chatlogs;
+        }
 
         return microchat;
     }
@@ -225,16 +228,21 @@ angular.module('dataService', []).factory('dataService', function () {
      * @param chatlog 不传为获取
      */
     function chatlog(uid, toUserId, qid, chatlog) {
-        chatlog = typeof chatlog !== 'undefined' ?  chatlog : null;
+        chatlog = typeof chatlog !== 'undefined' ?  chatlog : undefined;
 
-        if (chatlog === null) {
+        if (chatlog === undefined) {
             if (!this.chatlogs[uid] || !this.chatlogs[uid][toUserId]
                 || !this.chatlogs[uid][toUserId][qid] || !Array.isArray(this.chatlogs[uid][toUserId][qid])) {
-                return null;
+                return [];
             }
 
             return this.chatlogs[uid][toUserId][qid];
 
+        } else if (chatlog === null) {
+            if (this.chatlogs[uid]==undefined || this.chatlogs[uid][toUserId]==undefined || this.chatlogs[uid][toUserId][qid]==undefined) return false;
+
+            delete this.chatlogs[uid][toUserId][qid];
+            return true;
         } else {
             //判断+创建
             if (this.chatlogs[uid] === undefined) {

@@ -35,12 +35,23 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         $scope.touser.content = content;
         $scope.touser.contentType = contentType;
         $scope.touser.address = address;
+
+        //获取聊天记录数据并显示
+        var chatlog = dataService.chatlog(dataService.uiVar.userActive, uid, qid);
+        dataService.chatlogInfo = chatlog;
+        $scope.chatlogInfo = dataService.chatlogInfo;
     };
     //删除右侧对方用户列表
-    $scope.rmToUser = function (uid) {
+    $scope.rmToUser = function (uid, qid) {
         var rs = dataService.removeToUser(dataService.uiVar.userActive, uid);
         if (rs === false) {
             common.toast('info', '删除失败，请刷新页面后重试');
+            return false;
+        }
+        rs = dataService.chatlog(dataService.uiVar.userActive, uid, qid, null);
+        if (rs === false) {
+            common.toast('info', '删除失败，请刷新页面后重试');
+            return false;
         }
         initParams();
     };
@@ -116,7 +127,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         };
 
         //聊天记录
-        $scope.chatlogInfo = data.chatlogInfo;
+        $scope.chatlogInfo = dataService.chatlogInfo;
     }
 
 

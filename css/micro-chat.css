@@ -180,7 +180,7 @@ ul , li {
 
 .chat-wrapper .chat-box .chat-main:hover {
 	overflow-y: auto;
-	padding-right: 5px;
+	/*padding-right: 5px;*/
 }
 
 .chat-wrapper .chat-box .chat-main .chat-item {
@@ -385,7 +385,8 @@ ul , li {
 	opacity: 0;
 	transform: translateX(-100px);
 	background-color: rgba(245,245,245,.7);
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	transition: all 0.5s ease-in;  
     transition: all 0.4s ease-out;
 }
@@ -475,6 +476,10 @@ ul , li {
 
 .wrapper .que-menu .que-list .que-wrapper .que-content .content {
 	margin-bottom: 5px;
+	width: 250px;
+	max-width: 250px;
+	white-space: normal;
+	word-wrap: break-word;
 }
 
 .wrapper .que-menu .que-list .que-wrapper .que-content .que-voice {
