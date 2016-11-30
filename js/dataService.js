@@ -1,12 +1,9 @@
 /**
  * Created by raid on 2016/11/18.
  */
-angular.module('dataService', []).factory('dataService', function () {
+angular.module('dataService', ['maConstants']).factory('dataService', function (maConstants) {
     const CONST_CHAT_INDEX = 'microchat';
     const CONST_QUE_INDEX = 'question';
-    const CONST_CHATLOG_INDEX = 'chatlog'
-    const CONST_USER_INDEX = 'user';
-    const CONST_TOUSER_INDEX = 'touser';
 
     var data = {
         users : [], //客服用户
@@ -20,12 +17,18 @@ angular.module('dataService', []).factory('dataService', function () {
                 userPhone : "",
                 userPasswd : ""
             },
+            userSend : {
+                content : "",
+                contentType : maConstants.contentType.TYPE_TEXT,
+            },
             loginDialogActive : false,
 
             userActive : 0,
             touserActive : {},
             queActive : 0,
 
+            isLoading : 0,
+            hasMoreQue : 1,
         },
 
 
@@ -35,6 +38,7 @@ angular.module('dataService', []).factory('dataService', function () {
         chatlogInfo : [],
 
         init : init, //初始化dataService，读取localStorage中的数据
+        initUserSend : initUserSend, //初始化聊天发送框的值
 
         /**
          * 用户相关操作
@@ -54,17 +58,21 @@ angular.module('dataService', []).factory('dataService', function () {
         getQuestions : getQuestions, //获取指定用户的问题列表
         addQuestion : addQuestion, //添加问题
         removeQuestion : removeQuestion, //删除问题
+        clearQuestions : clearQuestions, //删除某个用户收到的所有问题
 
         /**
          *  展示问题相关操作
          */
         addQuestionsInfo : addQuestionsInfo,
         removeQuestionInfo : removeQuestionInfo,
+        clearQuestionsInfo : clearQuestionsInfo,
 
         /**
          * 聊天记录相关操作
          */
         chatlog : chatlog, //添加或者获取聊天记录
+
+        clearChatlogInfo : clearChatlogInfo,
 
     };
 
@@ -88,6 +96,11 @@ angular.module('dataService', []).factory('dataService', function () {
         }
 
         return microchat;
+    }
+
+    function initUserSend() {
+        this.uiVar.userSend.content = "";
+        this.uiVar.userSend.contentType = maConstants.contentType.TYPE_TEXT;
     }
 
     function addUser(user) {
@@ -206,6 +219,14 @@ angular.module('dataService', []).factory('dataService', function () {
         return true;
     }
 
+    function clearQuestions(uid) {
+        var index = CONST_QUE_INDEX + uid;
+        delete this.questions[index];
+
+        save();
+        return true;
+    }
+
     function addQuestionsInfo(questionsInfo) {
         this.questionsInfo.length = 0; //
         for (var i = 0; i < questionsInfo.length; i++) {
@@ -218,6 +239,10 @@ angular.module('dataService', []).factory('dataService', function () {
                 this.questionsInfo.splice(i, 1);
             }
         }
+    }
+    function clearQuestionsInfo() {
+        this.questionsInfo.length = 0;
+        return true;
     }
 
     /**
@@ -258,6 +283,10 @@ angular.module('dataService', []).factory('dataService', function () {
             this.chatlogs[uid][toUserId][qid].push(chatlog);
             save();
         }
+    }
+
+    function clearChatlogInfo() {
+        this.chatlogInfo = [];
     }
 
 

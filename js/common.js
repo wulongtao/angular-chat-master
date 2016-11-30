@@ -46,9 +46,8 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
     };
 
     function getCurrentTime() {
-        return new Date().getTime() / 1000;
+        return parseInt(new Date().getTime() / 1000);
     }
-
 
     return common;
 });

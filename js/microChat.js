@@ -1,4 +1,4 @@
-var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'chat', 'dataService', 'common', 'maConstants']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants']);
 
 app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', function($scope, $sce, wsService, dataService, common, maConstants) {
 
@@ -22,6 +22,10 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         dataService.uiVar.userActive = uid;
         dataService.uiVar.queActive = 0;
         $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
+
+        dataService.uiVar.touserActive.uid = 0;
+        dataService.uiVar.touserActive.qid = 0;
+        initParams();
     };
 
     //右侧对方用户列表选择
@@ -36,6 +40,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         $scope.touser.contentType = contentType;
         $scope.touser.address = address;
 
+        console.log(dataService.chatlogs);
+
         //获取聊天记录数据并显示
         var chatlog = dataService.chatlog(dataService.uiVar.userActive, uid, qid);
         dataService.chatlogInfo = chatlog;
@@ -43,12 +49,13 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     };
     //删除右侧对方用户列表
     $scope.rmToUser = function (uid, qid) {
-        var rs = dataService.removeToUser(dataService.uiVar.userActive, uid);
+        var rs = dataService.chatlog(dataService.uiVar.userActive, uid, qid, null);
         if (rs === false) {
             common.toast('info', '删除失败，请刷新页面后重试');
             return false;
         }
-        rs = dataService.chatlog(dataService.uiVar.userActive, uid, qid, null);
+
+        rs = dataService.removeToUser(dataService.uiVar.userActive, uid);
         if (rs === false) {
             common.toast('info', '删除失败，请刷新页面后重试');
             return false;
@@ -69,14 +76,16 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.userLogout = userLogout;
 
     //问题相关，问题弹出框
+    $scope.page = 1;
     $scope.showQuestion = function() {
         if ($scope.uiVar.userActive === 0) {
             common.toast('info', '请选择用户');
             return false;
         }
+        dataService.uiVar.isLoading = 1;
         dataService.uiVar.queActive = dataService.uiVar.queActive ? 0 : 1;
         if ($scope.uiVar.queActive === 1) {
-            wsService.getUserWaitingQuestions(dataService.uiVar.userActive);
+            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
         }
     };
     //解析html字符串
@@ -84,7 +93,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         return $sce.trustAsHtml(content);
     };
 
-    //问题忽略、解答
+    //问题忽略、解答、清除
     $scope.queIgnore = function (qid) {
         dataService.removeQuestion(dataService.uiVar.userActive, qid);
         dataService.removeQuestionInfo(qid);
@@ -93,6 +102,21 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         if ($scope.uiVar.userActive === 0) return false;
         wsService.sendAnswerNotice(qid, askUserId, dataService.uiVar.userActive);
     };
+    $scope.queClear = function () {
+        if ($scope.uiVar.userActive === 0) return false;
+
+        dataService.clearQuestions($scope.uiVar.userActive);
+        dataService.clearQuestionsInfo();
+    };
+    //问题滚动到底部加载更多
+    $scope.showMoreQue = function () {
+        dataService.uiVar.isLoading = 1;
+        if (dataService.hasMoreQue) {
+            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
+        }
+        console.log("bottom");
+    };
+
 
     //用户发送文字消息
     $scope.sendMessage = function() {
@@ -121,12 +145,11 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
 
         //消息发送
-        $scope.userSend = {
-            content : "",
-            contentType : maConstants.contentType.TYPE_TEXT,
-        };
+        $scope.userSend = dataService.uiVar.userSend;
+
 
         //聊天记录
+        dataService.clearChatlogInfo();
         $scope.chatlogInfo = dataService.chatlogInfo;
     }
 
@@ -150,6 +173,26 @@ app.directive('ngEnter', function () {
         });
     };
 });
+
+/**
+ * 滚动条滚动到底部时间
+ */
+//app.directive('myDirective', function() {});
+app.directive('scrolly', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attrs) {
+            var raw = element[0];
+
+            element.bind('scroll', function () {
+                if (raw.scrollTop + raw.offsetHeight >= raw.scrollHeight) {
+                    scope.$apply(attrs.scrolly);
+                }
+            });
+        }
+    };
+});
+
 
 app.filter("trustUrl", ['$sce', function ($sce) {
     return function (recordingUrl) {

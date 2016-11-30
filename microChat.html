@@ -15,6 +15,7 @@
 	<script type="text/javascript" src="js/lib/toaster.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-lazy-img.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-sanitize.min.js"></script>
+	<script type="text/javascript" src="js/lib/scrollglue.js"></script>
 
 </head>
 <body style="margin: 20px;">
@@ -57,15 +58,15 @@
 				</div>
 			</div>
 			<!-- 聊天内容显示区域 -->
-			<div class="chat-main">
+			<div class="chat-main" scroll-glue>
 				<ul>
-					<li ng-repeat="clog in chatlogInfo">
+					<li ng-repeat="clog in chatlogInfo track by $index">
 						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
 							<div class="avatar"><img lazy-img=" {{clog.avatar}} "></div>
 							<div class="item-wrapper" >
 								<div class="top" > 
 									<span> {{clog.nick}} </span> 
-									<span> {{clog.addTime}} </span> 
+									<span> {{clog.addTime| date:'yyyy-MM-dd HH:mm:ss'}} </span>
 								</div>
 								<div class="chat-text">
 									{{clog.content}} 
@@ -110,11 +111,11 @@
 	</div>
 
 	<!-- 问题栏 -->
-	<div class="que-menu" ng-class="{true : 'active'}[uiVar.queActive==1]">
+	<div class="que-menu" ng-class="{true : 'active'}[uiVar.queActive==1]" scrolly="showMoreQue()">
 
 		<ul class="que-list">
 			<li>
-				<div class="que-clear">
+				<div class="que-clear" ng-click="queClear()">
 					<i class="fa fa-trash-o fa-2x" aria-hidden="true"></i>
 					<span>清空问题</span>
 				</div>
@@ -150,6 +151,14 @@
 						<span class="btn btn-ignore" ng-click="queIgnore(que.qid)">忽略</span>
 						<span class="btn btn-answer" ng-click="queAnswer(que.qid, que.userInfo.userId)">解答</span>
 					</div>
+				</div>
+			</li>
+
+			<li ng-show="uiVar.isLoading">
+				<div class="spinner">
+					<div class="bounce1"></div>
+					<div class="bounce2"></div>
+					<div class="bounce3"></div>
 				</div>
 			</li>
 		</ul>
