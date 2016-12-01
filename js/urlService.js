@@ -2,7 +2,9 @@
  * 此函数存放所有的http请求
  * Created by raid on 2016/11/16.
  */
-angular.module('urlService', ['httpService']).factory('urlService', function (httpService) {
+angular.module('urlService', ['ngFileUpload', 'httpService']).factory('urlService', function (httpService, Upload) {
+    const HTTP_URL_PREFIX = "http://weida.lh.zhuzhu.com";
+
     var service = {
         user : { //用户相关
             add : addUser, //客服帐号登录
@@ -10,13 +12,16 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
         },
         question : { //问题相关
             questionsDetail : getQuestionsDetail,
+        },
+        upload : { //文件上传相关
+            uploadImg : uploadImg, //上传图片文件
         }
     };
 
     return service;
 
     function addUser(phone, passwd) {
-        return httpService.get("http://weida.products-test.zhuzhu.com/?_c=microAnswerOperator&_a=addUser&phone="+phone+"&password="+passwd
+        return httpService.get(HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=addUser&phone="+phone+"&password="+passwd
             ).then(function (data) {
                 return data;
             });
@@ -27,7 +32,7 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
 
         if (!Array.isArray(qids)) return false;
         qids = qids.join(',');
-        return httpService.get("http://weida.products-test.zhuzhu.com/?_c=microAnswerOperator&_a=questionsDetail&qids="+qids+"&page="+page
+        return httpService.get(HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=questionsDetail&qids="+qids+"&page="+page
         ).then(function (data) {
             return data;
         });
@@ -37,10 +42,27 @@ angular.module('urlService', ['httpService']).factory('urlService', function (ht
         uid = parseInt(uid);
         if (!uid || !qid) return false;
 
-        return httpService.get("http://weida.products-test.zhuzhu.com/?_c=microAnswerOperator&_a=userQuestionInfo&uid="+uid+"&qid="+qid)
+        return httpService.get(HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=userQuestionInfo&uid="+uid+"&qid="+qid)
             .then(function (data) {
                 return data;
             });
+    }
+    
+    function uploadImg(file, callback) {
+        console.log(file);
+        Upload.upload({
+            url: HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=uploadImage&name=uploadImage",
+            method : 'GET',
+            data: {file: file}
+        }).then(function (resp) {
+            callback(resp);
+            console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);
+        }, function (resp) {
+            console.log('Error status: ' + resp.status);
+        }, function (evt) {
+            // var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+            // console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+        });
     }
 });
 

@@ -16,6 +16,8 @@
 	<script type="text/javascript" src="js/lib/angular-lazy-img.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="js/lib/scrollglue.js"></script>
+	<script type="text/javascript" src="js/lib/ng-file-upload.min.js"></script>
+	<script type="text/javascript" src="js/lib/ng-file-upload-shim.min.js"></script>
 
 </head>
 <body style="margin: 20px;">
@@ -58,7 +60,7 @@
 				</div>
 			</div>
 			<!-- 聊天内容显示区域 -->
-			<div class="chat-main" scroll-glue>
+			<div id="chatMain" class="chat-main"  ng-class="{true : 'scrollVisible'}[scrollVisible==1]" scroll-glue >
 				<ul>
 					<li ng-repeat="clog in chatlogInfo track by $index">
 						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
@@ -79,8 +81,8 @@
 			<!-- 聊天工具栏显示区域 -->
 			<div class="chat-tool">
 				<i class="fa fa-smile-o fa-lg" aria-hidden="true"></i>
-				<label for="chatImg" class="fa fa-picture-o fa-lg" aria-hidden="true">
-					<input type="file" id="chatImg" name="" style="display: none;">
+				<label ngf-select="uploadImage($file)" class="fa fa-picture-o fa-lg" aria-hidden="true">
+					<!--<input type="file"  id="chatImg" name="" style="display: none;">-->
 				</label>
 			</div>
 			<div ng-model="userSend.content" class="chat-textarea" contenteditable="true" ng-model="model"  select-non-editable="true" ng-enter="sendMessage()">
@@ -103,7 +105,7 @@
 					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid)">
 					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
 						<span class="user-nick"> {{user.nick}} </span>
-					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid, user.qid)"></i>
+					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid, user.qid, $event)"></i>
 				</li>
 			</ul>
 		</div>

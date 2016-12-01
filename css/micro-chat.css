@@ -83,6 +83,12 @@ ul , li {
 
 .chat-wrapper .chat-bar,.chat-wrapper .chat-box {
     height: 520px;
+	overflow-y: hidden;
+	overflow-x: hidden;
+}
+
+.chat-wrapper .chat-bar:hover,.chat-wrapper .chat-box:hover {
+	overflow-y: auto;
 }
 
 .chat-wrapper .chat-bar {
@@ -226,6 +232,9 @@ ul , li {
 
 .chat-wrapper .chat-box .chat-main:hover {
 	overflow-y: auto;
+}
+
+.chat-wrapper .chat-box .chat-main:hover.scrollVisible {
 	padding-right: 5px;
 }
 

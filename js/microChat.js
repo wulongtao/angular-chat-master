@@ -7,9 +7,12 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     wsService.init({type : 1});
     initParams();
 
+    $scope.scrollVisible = 1;
+
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
     $scope.users = dataService.users;
+    if (!dataService.tousers[$scope.userActive]) dataService.tousers[$scope.userActive]=[];
     $scope.tousers = dataService.tousers[$scope.userActive];
     $scope.questionsInfo = dataService.questionsInfo;
     $scope.contentType = maConstants.contentType;
@@ -21,6 +24,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.userClick = function(uid) {
         dataService.uiVar.userActive = uid;
         dataService.uiVar.queActive = 0;
+        if (!dataService.tousers[$scope.userActive]) dataService.tousers[$scope.userActive]=[];
         $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
 
         dataService.uiVar.touserActive.uid = 0;
@@ -32,24 +36,21 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid) {
         dataService.uiVar.touserActive.uid = uid;
         dataService.uiVar.touserActive.qid = qid;
-        $scope.touser.uid = uid;
-        $scope.touser.qid = qid;
-        $scope.touser.nick = nick;
-        $scope.touser.avatar = avatar;
-        $scope.touser.content = content;
-        $scope.touser.contentType = contentType;
-        $scope.touser.address = address;
-
-        console.log(dataService.chatlogs);
+        dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar, content:content, contentType:contentType, address:address});
 
         //获取聊天记录数据并显示
-        var chatlog = dataService.chatlog(dataService.uiVar.userActive, uid, qid);
-        dataService.chatlogInfo = chatlog;
+        dataService.replaceChatlogInfo(dataService.uiVar.userActive, uid, qid);
         $scope.chatlogInfo = dataService.chatlogInfo;
+
+        //TODO 大于3会显示滚动条，这里需要优化
+        if ($scope.chatlogInfo.length >= 3) { $scope.scrollVisible = 1; }
+        else { $scope.scrollVisible = 0; }
     };
     //删除右侧对方用户列表
-    $scope.rmToUser = function (uid, qid) {
+    $scope.rmToUser = function (uid, qid, $event) {
+        $event.stopPropagation();
         var rs = dataService.chatlog(dataService.uiVar.userActive, uid, qid, null);
+
         if (rs === false) {
             common.toast('info', '删除失败，请刷新页面后重试');
             return false;
@@ -61,6 +62,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
             return false;
         }
         initParams();
+
     };
 
     //播放语音相关
@@ -78,11 +80,12 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     //问题相关，问题弹出框
     $scope.page = 1;
     $scope.showQuestion = function() {
+        $scope.page = 1;
         if ($scope.uiVar.userActive === 0) {
             common.toast('info', '请选择用户');
             return false;
         }
-        dataService.uiVar.isLoading = 1;
+        dataService.uiVar.isLoading = 0;
         dataService.uiVar.queActive = dataService.uiVar.queActive ? 0 : 1;
         if ($scope.uiVar.queActive === 1) {
             wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
@@ -101,6 +104,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.queAnswer = function (qid, askUserId) {
         if ($scope.uiVar.userActive === 0) return false;
         wsService.sendAnswerNotice(qid, askUserId, dataService.uiVar.userActive);
+        $scope.chatlogInfo = dataService.chatlogInfo;
     };
     $scope.queClear = function () {
         if ($scope.uiVar.userActive === 0) return false;
@@ -114,14 +118,19 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         if (dataService.hasMoreQue) {
             wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
         }
-        console.log("bottom");
     };
 
 
     //用户发送文字消息
     $scope.sendMessage = function() {
         wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, $scope.userSend.content, $scope.touser.qid);
+        $scope.chatlogInfo = dataService.chatlogInfo;
     };
+    //发送图片
+    $scope.uploadImage = function (file) {
+        wsService.sendChatImage(file);
+    };
+
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)
@@ -132,17 +141,9 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     }
 
     function initParams() {
+        dataService.initTouserInfo();
         //聊天标题栏
-        $scope.touser = {
-            uid : 0,
-            qid : 0,
-            nick : '猪猪微答',
-            avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
-            content : '客服聊天系统',
-            contentType : maConstants.contentType.TYPE_TEXT,
-            address : '',
-        };
-
+        $scope.touser = dataService.touserInfo;
 
         //消息发送
         $scope.userSend = dataService.uiVar.userSend;
@@ -152,6 +153,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         dataService.clearChatlogInfo();
         $scope.chatlogInfo = dataService.chatlogInfo;
     }
+
 
 
 }]);

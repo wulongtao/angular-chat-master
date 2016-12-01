@@ -36,6 +36,8 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         questionsInfo : [],
         //展示在聊天页面中的聊天记录
         chatlogInfo : [],
+        //展示在页面中的聊天标题
+        touserInfo : {},
 
         init : init, //初始化dataService，读取localStorage中的数据
         initUserSend : initUserSend, //初始化聊天发送框的值
@@ -67,12 +69,19 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         removeQuestionInfo : removeQuestionInfo,
         clearQuestionsInfo : clearQuestionsInfo,
 
+
         /**
          * 聊天记录相关操作
          */
         chatlog : chatlog, //添加或者获取聊天记录
 
         clearChatlogInfo : clearChatlogInfo,
+        replaceChatlogInfo : replaceChatlogInfo,
+
+        /**
+         * 聊天对方用户展示相关操作
+         */
+        initTouserInfo : initTouserInfo,
 
     };
 
@@ -136,9 +145,6 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
     }
 
     function addToUser(uid, touserInfo) {
-        if (!this.tousers[uid]) {
-            this.tousers[uid] = [];
-        }
         this.tousers[uid].push({
             uid : touserInfo.uid,
             nick : touserInfo.nick,
@@ -227,8 +233,8 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         return true;
     }
 
-    function addQuestionsInfo(questionsInfo) {
-        this.questionsInfo.length = 0; //
+    function addQuestionsInfo(questionsInfo, needClear) {
+        if (needClear) this.questionsInfo.length = 0; //清空数组
         for (var i = 0; i < questionsInfo.length; i++) {
             this.questionsInfo.push(questionsInfo[i]);
         }
@@ -264,7 +270,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             return this.chatlogs[uid][toUserId][qid];
 
         } else if (chatlog === null) {
-            if (this.chatlogs[uid]==undefined || this.chatlogs[uid][toUserId]==undefined || this.chatlogs[uid][toUserId][qid]==undefined) return false;
+            if (this.chatlogs[uid]==undefined || this.chatlogs[uid][toUserId]==undefined || this.chatlogs[uid][toUserId][qid]==undefined) return true;
 
             delete this.chatlogs[uid][toUserId][qid];
             return true;
@@ -276,7 +282,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             if (this.chatlogs[uid][toUserId] === undefined) {
                 this.chatlogs[uid][toUserId] = {};
             }
-            if (this.chatlogs[uid][toUserId][qid] == undefined || !Array.isArray(this.chatlogs[uid][toUserId][qid])) {
+            if (this.chatlogs[uid][toUserId][qid] === undefined || !Array.isArray(this.chatlogs[uid][toUserId][qid])) {
                 this.chatlogs[uid][toUserId][qid] = [];
             }
 
@@ -286,7 +292,30 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
     }
 
     function clearChatlogInfo() {
-        this.chatlogInfo = [];
+        this.chatlogInfo.length = 0;
+    }
+
+    function replaceChatlogInfo(uid, touserId, qid) {
+        this.chatlogInfo.length = 0;
+        var chatlog = this.chatlog(uid, touserId, qid);
+        for (var i = 0; i < chatlog.length; i++) {
+            this.chatlogInfo.push(chatlog[i]);
+        }
+    }
+
+    /**
+     * 初始化toUserInfo
+     * @param data json
+     */
+    function initTouserInfo(data) {
+        data = typeof data !== 'undefined' ?  data : {};
+        this.touserInfo.uid = data.uid ? data.uid : 0;
+        this.touserInfo.qid = data.qid ? data.qid : 0;
+        this.touserInfo.nick = data.nick ? data.nick : '猪猪微答';
+        this.touserInfo.avatar = data.avatar ? data.avatar : 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png';
+        this.touserInfo.content = data.content ? data.content : '客服聊天系统';
+        this.touserInfo.contentType = data.contentType ? data.contentType : maConstants.contentType.TYPE_TEXT;
+        this.touserInfo.address = data.address ? data.address : "";
     }
 
 

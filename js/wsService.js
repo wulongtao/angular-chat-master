@@ -2,7 +2,7 @@
  * 此函数存放WebSocket的相关操作
  * Created by raid on 2016/11/10.
  */
-angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).factory('wsService', function(urlService, common, maConstants, dataService, $timeout) {
+angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).factory('wsService', function(urlService, common, maConstants, dataService, $timeout, $interval) {
 
     var wss = {
         type : 0, //类型1->websocket，2->socket.io
@@ -25,12 +25,24 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         // wsClose : wsClose,
         sendMsg : sendMsg, //发送消息
         sendChatMsg : sendChatMsg, //发送聊天消息
+        sendChatImage : sendChatImage, //聊天发送图片
         sendAnswerNotice : sendAnswerNotice, //发送解答问题消息
         sendClientNotice : sendClientNotice, //发送type=6
 
     };
 
+    /**
+     * 用户保持连接每隔3分钟发送心跳包
+     * @type {{usersIntv: {}, startPings: *, cancelPings: *}}
+     */
+    var pings = {
+        usersIntv : {},
+        startPings : startPings,
+        cancelPings : cancelPings
+    };
+
     return wss;
+
 
     /**
      * 初始化
@@ -106,6 +118,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                 content : questionInfo.content,
                 address : questionInfo.address
             });
+
+            dataService.initTouserInfo({uid:userInfo.uid, qid:questionInfo.qid, nick:userInfo.nick,
+                avatar:userInfo.avatar, content:questionInfo.content, contentType:questionInfo.contentType, address:questionInfo.address});
         });
     }
 
@@ -119,12 +134,14 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         if (!qids || qids.length == 0) {
             return false;
         }
+        dataService.uiVar.isLoading = 1;
 
         urlService.question.questionsDetail(qids, page).then(function (data) {
             if (data.result != 0) {
                 common.toast('info', data.message);
             }
-            dataService.addQuestionsInfo(data.data.questions);
+            var needClear = page == 1 ? 1 : 0;
+            dataService.addQuestionsInfo(data.data.questions, needClear);
             dataService.uiVar.isLoading = 0;
             dataService.hasMoreQue = data.data.hasMore;
         });
@@ -197,6 +214,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
     function onclose() {
         console.log("onclose");
         dataService.removeUser(this.clientId);
+        pings.cancelPings(this.clientId); //结束发送心跳包
         // if (!this.wss || !this.wss[this.clientId]) this.wss[this.clientId] = null;
         common.toast('info', '帐号已在其他设备登录');
     }
@@ -265,6 +283,12 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         });
 
         this.sendMsg(uid, data);
+    }
+
+    function sendChatImage(file) {
+        urlService.upload.uploadImg(file, function (resp) {
+            console.log(resp);
+        });
     }
 
     /**
@@ -370,6 +394,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             case 0:
                 if (messageType === maConstants.wsMessageType.TYPE_LOGIN) {
                     common.toast('success', maConstants.message.loginSuccess);
+                    pings.startPings(msg.toUserId);
                 } else if (messageType === maConstants.wsMessageType.TYPE_LOGOUT) {
                     wsClose(msg.toUserId);
                     common.toast('success', msg.message);
@@ -378,7 +403,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                     var toUserId = parseMessageId(msg.messageId).id;
                     var qid = msg.qid;
 
-                    dataService.chatlogInfo = dataService.chatlog(uid, toUserId, qid);
+                    dataService.replaceChatlogInfo(uid, toUserId, qid);
                     dataService.initUserSend();
                 } else if (messageType === maConstants.wsMessageType.TYPE_ANSWER_NOTICE) {
                     wss.addToUser(msg.toUserId, msg.qid, msg.messageId);
@@ -388,6 +413,8 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
                     dataService.removeQuestionInfo(msg.qid);
 
                     //焦点到toUserId那
+                    dataService.uiVar.touserActive.uid = msg.messageId;
+                    dataService.uiVar.touserActive.qid = msg.qid;
                     dataService.uiVar.userActive = msg.toUserId;
                 }
 
@@ -430,6 +457,21 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         return messageId;
     }
 
+    function startPings(uid) {
+        this.cancelPings(uid);
+        this.usersIntv[uid] = $interval(function () {
+            var userInfo = dataService.getUser(uid);
+            wss.sendMsg(uid, {type:maConstants.wsMessageType.TYPE_PING, uid:userInfo['uid'], sid:userInfo['sid']});
+        }, maConstants.PING_TIMES);
+    }
+
+    function cancelPings(uid) {
+        if (!this.usersIntv[uid]) return ;
+
+        $interval.cancel(this.usersIntv[uid]);
+        this.usersIntv = undefined;
+    }
+
     /**
      * 更新dom
      */
@@ -438,7 +480,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
         // $rootScope.$apply();
         $timeout(angular.noop);
     }
-
 
 });
 

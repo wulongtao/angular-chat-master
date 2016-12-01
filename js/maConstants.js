@@ -4,6 +4,8 @@
  */
 angular.module('maConstants', []).factory('maConstants', function () {
     var constants = {
+        //发送心跳包的时间间隔,客户端每隔5分钟发送一个包给服务端
+        PING_TIMES : 270000,
 
         //错误信息
         message : {
