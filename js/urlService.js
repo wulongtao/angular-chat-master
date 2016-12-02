@@ -3,7 +3,7 @@
  * Created by raid on 2016/11/16.
  */
 angular.module('urlService', ['ngFileUpload', 'httpService']).factory('urlService', function (httpService, Upload) {
-    const HTTP_URL_PREFIX = "http://weida.lh.zhuzhu.com";
+    const HTTP_URL_PREFIX = "http://weida.products-test.zhuzhu.com";
 
     var service = {
         user : { //用户相关
@@ -49,11 +49,13 @@ angular.module('urlService', ['ngFileUpload', 'httpService']).factory('urlServic
     }
     
     function uploadImg(file, callback) {
-        console.log(file);
         Upload.upload({
             url: HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=uploadImage&name=uploadImage",
-            method : 'GET',
-            data: {file: file}
+            data: {
+                "Content-Type": file.type != '' ? file.type : 'application/octet-stream', // content type of the file (NotEmpty)
+                filename: file.name, // this is needed for Flash polyfill IE8-9
+                file: file
+            }
         }).then(function (resp) {
             callback(resp);
             console.log('Success ' + resp.config.data.file.name + 'uploaded. Response: ' + resp.data);

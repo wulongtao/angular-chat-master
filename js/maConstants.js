@@ -9,12 +9,9 @@ angular.module('maConstants', []).factory('maConstants', function () {
 
         //错误信息
         message : {
-
             empTyLoginParams : '手机号或密码为空',
             loginSuccess : '登录成功',
-
         },
-
 
         //WebSocket Type
         wsMessageType : {

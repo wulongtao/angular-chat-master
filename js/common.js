@@ -8,6 +8,7 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
         isValid : isValid,
         htmlToPlaintext : htmlToPlaintext,
         getCurrentTime : getCurrentTime,
+        removeBlank : removeBlank,
     };
 
     /**
@@ -42,11 +43,32 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
      * 去掉内容中的tags
      */
     function htmlToPlaintext(text) {
-        return text ? String(text).replace(/<[^>]+>/gm, '') : '';
+        var dom = document.createElement("span");
+        dom.innerHTML = text;
+        console.log(dom.innerText);
+        return dom.innerText;
     };
+
+    function escapeHtml(string) {
+        var entityMap = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': '&quot;',
+            "'": '&#39;',
+            "/": '&#x2F;'
+        };
+        return String(string).replace(/[&<>"'\/]/g, function (s) {
+            return entityMap[s];
+        });
+    }
 
     function getCurrentTime() {
         return parseInt(new Date().getTime() / 1000);
+    }
+    
+    function removeBlank(str) {
+        return str.replace(/&nbsp;/g, "");
     }
 
     return common;

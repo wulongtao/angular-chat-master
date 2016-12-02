@@ -1,10 +1,11 @@
-var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', function($scope, $sce, wsService, dataService, common, maConstants) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory) {
 
 
     //初始化wsFactory
     wsService.init({type : 1});
+    $scope.emojis = emojiFactory.emj('html_to_html5');
     initParams();
 
     $scope.scrollVisible = 1;
@@ -123,7 +124,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
     //用户发送文字消息
     $scope.sendMessage = function() {
-        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, $scope.userSend.content, $scope.touser.qid);
+        var content = common.removeBlank($scope.userSend.content);
+        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, content, $scope.touser.qid);
         $scope.chatlogInfo = dataService.chatlogInfo;
     };
     //发送图片
@@ -131,6 +133,18 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         wsService.sendChatImage(file);
     };
 
+    //emoji表情栏显示
+    $scope.emojiActive = 0;
+    $scope.showEmojiBox = function ($event) {
+        $scope.emojiActive = !$scope.emojiActive;
+        $event.stopPropagation();
+    };
+    $scope.initEmojiActive = function () {
+        $scope.emojiActive = 0;
+    };
+    $scope.addEmojiToContent = function (code, html) {
+        dataService.uiVar.userSend.content += html + "&nbsp;";
+    };
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)

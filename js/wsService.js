@@ -2,7 +2,7 @@
  * 此函数存放WebSocket的相关操作
  * Created by raid on 2016/11/10.
  */
-angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).factory('wsService', function(urlService, common, maConstants, dataService, $timeout, $interval) {
+angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'emojiFactory']).factory('wsService', function(urlService, common, maConstants, dataService, emojiFactory, $timeout, $interval) {
 
     var wss = {
         type : 0, //类型1->websocket，2->socket.io
@@ -254,14 +254,14 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             common.toast('info', '请选择用户再发送消息');
         }
 
-        content = common.htmlToPlaintext(content);
+        var sendContent = common.htmlToPlaintext(content);
 
         var data = {
             type : maConstants.wsMessageType.TYPE_SAY,
             uid : userInfo['uid'],
             targetUserId : touserInfo['uid'],
             sid : userInfo['sid'],
-            content : content,
+            content : sendContent,
             contentType : contentType,
             messageId : createMessageId(touserInfo['uid']),
         };
@@ -363,6 +363,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService']).f
             content : msg.content,
             addTime : common.getCurrentTime()*1000,
         });
+
+        if (dataService.uiVar.userActive === uid) {
+            dataService.replaceChatlogInfo(uid, touserInfo['uid'], qid);
+        }
 
         wss.sendClientNotice(uid, {
             type : msg.type,

@@ -21,7 +21,7 @@
 
 </head>
 <body style="margin: 20px;">
-<div ng-controller="CtlChat"  class="wrapper">
+<div ng-controller="CtlChat" class="wrapper" ng-click="initEmojiActive()">
 	
 
 	<div class="chat-wrapper">
@@ -60,7 +60,7 @@
 				</div>
 			</div>
 			<!-- 聊天内容显示区域 -->
-			<div id="chatMain" class="chat-main"  ng-class="{true : 'scrollVisible'}[scrollVisible==1]" scroll-glue >
+			<div id="chatMain" class="chat-main"  ng-class="{true : 'scrollVisible'}[scrollVisible==1]" scroll-glue="true" >
 				<ul>
 					<li ng-repeat="clog in chatlogInfo track by $index">
 						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
@@ -70,8 +70,7 @@
 									<span> {{clog.nick}} </span> 
 									<span> {{clog.addTime| date:'yyyy-MM-dd HH:mm:ss'}} </span>
 								</div>
-								<div class="chat-text">
-									{{clog.content}} 
+								<div class="chat-text" ng-bind-html="deliberatelyTrustDangerousSnippet(clog.content)">
 								</div>
 							</div>
 						</div>
@@ -80,12 +79,12 @@
 			</div>
 			<!-- 聊天工具栏显示区域 -->
 			<div class="chat-tool">
-				<i class="fa fa-smile-o fa-lg" aria-hidden="true"></i>
+				<i class="fa fa-smile-o fa-lg" aria-hidden="true" ng-class="{true : 'active'}[emojiActive==1]" ng-click="showEmojiBox($event)"></i>
 				<label ngf-select="uploadImage($file)" class="fa fa-picture-o fa-lg" aria-hidden="true">
-					<!--<input type="file"  id="chatImg" name="" style="display: none;">-->
 				</label>
 			</div>
-			<div ng-model="userSend.content" class="chat-textarea" contenteditable="true" ng-model="model"  select-non-editable="true" ng-enter="sendMessage()">
+			<div ng-model="userSend.content" class="chat-textarea" contenteditable="true" ng-model="model"
+				 select-non-editable="true" strip-br="true" ng-enter="sendMessage()">
 			</div>
 			<!-- 聊天框尾部 -->
 			<div class="chat-footer">
@@ -193,11 +192,20 @@
 
 	<!--toaster-->
 	<toaster-container></toaster-container>
+
+	<!--表情显示-->
+	<div class="emoji-box" ng-show="emojiActive">
+		<ul>
+			<li class="emoji-item" ng-repeat="emj in emojis track by $index"
+				ng-bind-html="deliberatelyTrustDangerousSnippet(emj.html)" ng-click="addEmojiToContent(emj.code,emj.html)"></li>
+		</ul>
+	</div>
 </div>
 
 
 
 </body>
+<script type="text/javascript" src="js/emojiFactory.js"></script>
 <script type="text/javascript" src="js/httpService.js"></script>
 <script type="text/javascript" src="js/urlService.js"></script>
 <script type="text/javascript" src="js/chatUtil.js"></script>
