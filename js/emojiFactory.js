@@ -2583,28 +2583,33 @@ angular.module('emojiFactory', []).factory('emojiFactory', function () {
     /**
     * 
     */
-    function emj(map, code) {
+    function emj(map, content) {
         map = typeof map !== 'undefined' ?  map : {};
-        code = typeof code !== 'undefined' ? code : undefined;
+        content = typeof content !== 'undefined' ? content : undefined;
 
-        if (code === undefined) { //不传code为获取集合
+        if (content === undefined) { //不传code为获取集合
             if (map === undefined) {
                 return emoji_maps;
             } else if (map === 'html_to_html5') {
                 return emoji_maps['html_to_html5'];
+            } else if (map === 'unified_to_html') {
+                return emoji_maps['unified_to_html'];
             }
         } else {
+            if (content === undefined) {return ;}
             if (map === 'undefine_to_html') {
                 for(var i = 0; i < emoji_maps['unified_to_html'].length; i++) {
-                    if (code == emoji_maps['unified_to_html'].code) {
-                        console.log(emoji_maps['unified_to_html'].html);
-                    }
+                    content = content.replace(RegExp(quote(emoji_maps['unified_to_html'][i].code), "g")
+                        , emoji_maps['unified_to_html'][i].html);
                 }
             }
+            return content;
         }
         
     }
 
-
+    function quote(str) {
+        return (str+'').replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&");
+    };
 
 });

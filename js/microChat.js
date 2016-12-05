@@ -1,6 +1,6 @@
-var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
 
 
     //初始化wsFactory
@@ -9,6 +9,9 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     initParams();
 
     $scope.scrollVisible = 1;
+    $scope.dialogType = 0;
+
+    mapService.init({containerId:'amap', inputId:'inputAddress'});
 
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
@@ -19,7 +22,33 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.contentType = maConstants.contentType;
     $scope.showLoginDialog = function() {
         dataService.uiVar.loginDialogActive = !dataService.uiVar.loginDialogActive;
+        if (dataService.uiVar.loginDialogActive === true) {
+            $scope.dialogType = 1;
+        }
     };
+    $scope.showAddQueDialog = function() {
+        if ($scope.uiVar.userActive === 0) {
+            common.toast('info', '请选择用户');
+            return false;
+        }
+        dataService.uiVar.addQueDialogActive = !dataService.uiVar.addQueDialogActive;
+        if (dataService.uiVar.addQueDialogActive === true) {
+            $scope.dialogType = 2;
+        }
+    };
+    $scope.showDialog = function () {
+        if ($scope.dialogType === 1) {
+            $scope.showLoginDialog();
+        } else if ($scope.dialogType === 2) {
+            $scope.showAddQueDialog();
+        }
+    };
+
+    //发送问题
+    $scope.queSend = function () {
+        console.log(dataService.uiVar.queSend);
+    };
+
 
     //左侧客服用户列表选择
     $scope.userClick = function(uid) {

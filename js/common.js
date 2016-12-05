@@ -9,6 +9,8 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
         htmlToPlaintext : htmlToPlaintext,
         getCurrentTime : getCurrentTime,
         removeBlank : removeBlank,
+        _escapeToUtf32 : _escapeToUtf32,
+        _convertStringToUnicodeCodePoints : _convertStringToUnicodeCodePoints,
     };
 
     /**
@@ -45,7 +47,6 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
     function htmlToPlaintext(text) {
         var dom = document.createElement("span");
         dom.innerHTML = text;
-        console.log(dom.innerText);
         return dom.innerText;
     };
 
@@ -69,6 +70,44 @@ angular.module('common', ['toaster', 'ngAnimate']).factory('common', function (t
     
     function removeBlank(str) {
         return str.replace(/&nbsp;/g, "");
+    }
+    
+    function _escapeToUtf32(str) {
+        var escaped = [],
+            unicodeCodes = this._convertStringToUnicodeCodePoints(str),
+            i = 0,
+            l = unicodeCodes.length,
+            hex;
+
+        for (; i < l; i++) {
+            hex = unicodeCodes[i].toString(16);
+            escaped.push('0000'.substr(hex.length) + hex);
+        }
+        return escaped.join('-');
+    }
+    
+    function _convertStringToUnicodeCodePoints(str) {
+        var surrogate1st = 0,
+            unicodeCodes = [],
+            i = 0,
+            l = str.length;
+
+        for (; i < l; i++) {
+            var utf16Code = str.charCodeAt(i);
+            if (surrogate1st != 0) {
+                if (utf16Code >= 0xDC00 && utf16Code <= 0xDFFF) {
+                    var surrogate2nd = utf16Code,
+                        unicodeCode = (surrogate1st - 0xD800) * (1 << 10) + (1 << 16) + (surrogate2nd - 0xDC00);
+                    unicodeCodes.push(unicodeCode);
+                }
+                surrogate1st = 0;
+            } else if (utf16Code >= 0xD800 && utf16Code <= 0xDBFF) {
+                surrogate1st = utf16Code;
+            } else {
+                unicodeCodes.push(utf16Code);
+            }
+        }
+        return unicodeCodes;
     }
 
     return common;

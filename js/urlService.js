@@ -11,7 +11,8 @@ angular.module('urlService', ['ngFileUpload', 'httpService']).factory('urlServic
             userQuestionInfo : getUserQuestionInfo, //获取用户信息
         },
         question : { //问题相关
-            questionsDetail : getQuestionsDetail,
+            questionsDetail : getQuestionsDetail, //获取问题列表
+            getEmojiH5 : getEmojiH5, //聊天内容解析Emoji表情
         },
         upload : { //文件上传相关
             uploadImg : uploadImg, //上传图片文件
@@ -65,6 +66,16 @@ angular.module('urlService', ['ngFileUpload', 'httpService']).factory('urlServic
             // var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
             // console.log('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
         });
+    }
+
+    function getEmojiH5(content1, content2) {
+        content1 = typeof content1 !== 'undefined' ?  content1 : '';
+        content2 = typeof content2 !== 'undefined' ?  content2 : '';
+
+        return httpService.get(HTTP_URL_PREFIX + "/?_c=microAnswerOperator&_a=getEmojiH5&content1="+content1+"&content2="+content2)
+            .then(function (data) {
+                return data;
+            });
     }
 });
 

@@ -348,6 +348,24 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     }
 
     function handleChatNotice(msg) {
+        if (msg.contentType !== 1) {
+            doHandleChatNotice(msg)
+        } else {
+            urlService.question.getEmojiH5(msg.content).then(function (data) {
+                if (data.result !== 0) {
+                    common.toast('info', data.message);
+                }
+
+                msg.content = data.data.content1;
+                doHandleChatNotice(msg);
+            });
+        }
+    }
+
+    function doHandleChatNotice(msg) {
+        if (!msg.content) {
+            msg.content = "&nbsp;";
+        }
         var uid = msg.toUserId;
         var touserInfo = dataService.getToUser(uid, msg.targetUserId);
         var qid = msg.qid;

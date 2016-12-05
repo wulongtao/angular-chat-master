@@ -64,10 +64,53 @@ ul , li {
 	  }
 }
 
+/*地图相关样式*/
+#amap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 463px;
+	height: 300px;
+	z-index: 150;
+}
+.amap {
+	z-index: 160;
+	display: flex;
+	flex-direction: column;
+	align-content: center;
+	align-items: center;
+	justify-content: space-around;
+	transform: translateY(20px);
+	width: 500px;
+	height: 190px;
+	background-color: #ffffff;
+	border-radius: 15px;
+	box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
+	padding: 15px;
+}
+
+.md.md-que .que-address-info {
+	border: none;
+	width: 85%;
+	height: 30px;
+	outline: none;
+	margin-right: 30px;
+	border:1px solid #BCBCBC;
+	border-radius: 8px;
+}
+.md.md-que .que-address-info:focus {
+	box-shadow: 0 0 1em #1ABC9C;
+	border-radius: 8px;
+}
+.amap-sug-result {
+	z-index: 8500;
+}
+
 .wrapper {
 	display: flex;
 	/*display: inline-block;*/
 	position: relative;
+	left:20%;
 }
 .chat-wrapper {
 	display: flex;
@@ -432,6 +475,18 @@ ul , li {
 	background: #33DF83;
 }
 
+.chat-wrapper .chat-bar .user-list .add-que {
+	height: 35px;
+	justify-content: center;
+
+	transition: all 0.3s;
+}
+
+.chat-wrapper .chat-bar .user-list .add-que:hover {
+	color: #FFFFFF;
+	background: #33DF83;
+}
+
 .wrapper .que-menu {
 	/*z-index: -10;*/
 	height: 520px;
@@ -603,9 +658,9 @@ ul , li {
 	flex-direction: column;
 	box-sizing: border-box;
     width: 570px;
-    position: absolute;
+    position: fixed;
     left: 50%;
-    top: 50%;
+    top: 20%;
     margin-left: -285px;
     border-radius: 3px;
     background-color: #fff;
@@ -632,7 +687,11 @@ ul , li {
 	-webkit-transition: all 0.3s;
 	-moz-transition: all 0.3s;
 	transition: all 0.3s;
-} 
+}
+
+.md.md-login {
+	width: 600px;
+}
 
 .md.md-active {
 	visibility: visible;

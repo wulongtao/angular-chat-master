@@ -21,7 +21,15 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
                 content : "",
                 contentType : maConstants.contentType.TYPE_TEXT,
             },
+            queSend : {
+                lat : 0,
+                lng : 0,
+                content : "",
+                contentType : 1,
+                address : "",
+            },
             loginDialogActive : false,
+            addQueDialogActive : false,
 
             userActive : 0,
             touserActive : {},
