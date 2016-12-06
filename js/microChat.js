@@ -1,6 +1,6 @@
-var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', 'angular-web-notification']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', 'webNotification', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService, webNotification) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
 
 
     //初始化wsFactory
@@ -46,28 +46,6 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
     //发送问题
     $scope.queSend = function () {
-
-        webNotification.showNotification('Example Notification', {
-            body: 'Notification Text...',
-            icon: 'my-icon.ico',
-            onClick: function onNotificationClicked() {
-                console.log('Notification clicked.');
-            },
-            autoClose: 4000 //auto close the notification after 4 seconds (you can manually close it via hide function)
-        }, function onShow(error, hide) {
-            if (error) {
-                window.alert('Unable to show notification: ' + error.message);
-            } else {
-                console.log('Notification Shown.');
-
-                setTimeout(function hideNotification() {
-                    console.log('Hiding notification....');
-                    hide(); //manually close the notification (you can skip this if you use the autoClose option)
-                }, 5000);
-            }
-        });
-
-        return ;
 
         if (!common.isValid(dataService.uiVar.queSend) || !common.isValid(dataService.uiVar.userActive)) {
             common.toast('info', '请选择(输入)地址或内容');
@@ -128,7 +106,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     //badge显示相关
     $scope.checkShowBadge = function (uid, qid) {
         return dataService.uiVar.userBadge[dataService.uiVar.userActive][uid+'-'+qid];
-    }
+    };
 
     //播放语音相关
     $scope.playQAudio = function () {
@@ -143,9 +121,9 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.userLogout = userLogout;
 
     //问题相关，问题弹出框
-    $scope.page = 1;
+    dataService.uiVar.quePage = 1;
     $scope.showQuestion = function() {
-        $scope.page = 1;
+        dataService.uiVar.quePage = 1;
         if ($scope.uiVar.userActive === 0) {
             common.toast('info', '请选择用户');
             return false;
@@ -153,7 +131,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         dataService.uiVar.isLoading = 0;
         dataService.uiVar.queActive = dataService.uiVar.queActive ? 0 : 1;
         if ($scope.uiVar.queActive === 1) {
-            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
+            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, dataService.uiVar.quePage++);
         }
     };
     //解析html字符串
@@ -181,7 +159,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.showMoreQue = function () {
         dataService.uiVar.isLoading = 1;
         if (dataService.hasMoreQue) {
-            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, $scope.page++);
+            wsService.getUserWaitingQuestions(dataService.uiVar.userActive, dataService.uiVar.quePage++);
         }
     };
 
@@ -209,6 +187,17 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.addEmojiToContent = function (code, html) {
         dataService.uiVar.userSend.content += html + "&nbsp;";
     };
+
+
+    //如果有用户，则默认第一个用户选中
+    if (dataService.users.length >= 1) {
+        dataService.uiVar.userActive = dataService.users[0].uid;
+        $scope.userClick(dataService.uiVar.userActive);
+    }
+
+    $scope.$watch('uiVar.toUserActive.uid', function () {
+        console.log("abc");
+    });
 
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)

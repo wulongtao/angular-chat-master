@@ -34,7 +34,9 @@
      * The web notification service wraps the HTML 5 Web Notifications API as an angular service.
      */
     webNotification.factory('webNotification', function onCreateService() {
-        var service = {};
+        var service = {}
+
+        service.hideNotification = null;
 
         /**
          * The internal Notification library used by this angular module.
@@ -154,6 +156,8 @@
             var hideNotification = function () {
                 notification.close();
             };
+
+            service.hideNotification = hideNotification;
 
             if (autoClose) {
                 setTimeout(hideNotification, autoClose);

@@ -226,9 +226,8 @@ ul , li {
 
 .wrapper {
 	display: flex;
-	/*display: inline-block;*/
 	position: relative;
-	left:20%;
+	justify-content: center;
 }
 .chat-wrapper {
 	display: flex;

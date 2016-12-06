@@ -2,13 +2,14 @@
  * 此模块存放一些公共的方法
  * Created by raid on 2016/11/17.
  */
-angular.module('common', ['toaster', 'dataService', 'ngAnimate']).factory('common', function (toaster) {
+angular.module('common', ['toaster', 'angular-web-notification', 'ngAnimate']).factory('common', function (toaster, webNotification, $window) {
     var common = {
         toast : toast, //toast消息
         isValid : isValid, //判断参数是否为空
         htmlToPlaintext : htmlToPlaintext, //去掉字符串中的html标签
         getCurrentTime : getCurrentTime, //获取当前时间
         removeBlank : removeBlank, //去除空格
+        showNotification : showNotification, //notification
     };
 
     /**
@@ -74,6 +75,28 @@ angular.module('common', ['toaster', 'dataService', 'ngAnimate']).factory('commo
     
     function removeBlank(str) {
         return str.replace(/&nbsp;/g, "");
+    }
+
+    function showNotification(text, callback) {
+        callback = callback !== 'undefined' ? callback : undefined;
+        webNotification.showNotification('您有新的消息', {
+            body: text,
+            icon: 'http://weida.products-test.zhuzhu.com/static/images/ma-operator/login-logo.png',
+            onClick: function onNotificationClicked() {
+                $window.focus();
+                webNotification.hideNotification();
+                if (callback !== undefined) callback&&callback();
+            },
+            autoClose: 4000 //auto close the notification after 4 seconds (you can manually close it via hide function)
+        }, function onShow(error, hide) {
+            if (error) {
+                common.toast('info', 'Unable to show notification: ' + error.message);
+            } else {
+                setTimeout(function hideNotification() {
+                    hide(); //manually close the notification (you can skip this if you use the autoClose option)
+                }, 5000);
+            }
+        });
     }
 
     return common;

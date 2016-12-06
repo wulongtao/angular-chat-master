@@ -392,6 +392,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
 
     }
 
+    /**
+     * 修改后台的话这个方法是可以去掉的
+     * @param msg
+     */
     function doHandleChatNoticeStep1(msg) {
         if (msg.contentType !== 1) {
             doHandleChatNotice(msg)
@@ -451,6 +455,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         //把qid存到每一个客服中
         dataService.addQuestion(msg.toUserId, msg.qid);
         wss.sendClientNotice(msg.toUserId, {type:msg.type,randId:msg.randId,qid:msg.qid});
+
+
+        if (dataService.uiVar.userActive !== 0) {
+            common.showNotification('您有新的问题需要回答', function () {
+                console.log("abc");
+                dataService.uiVar.queActive = 1;
+                dataService.uiVar.quePage = 1;
+                wss.getUserWaitingQuestions(dataService.uiVar.userActive, dataService.uiVar.quePage++);
+                updateDom();
+            });
+        }
     }
 
     function handleAnswerNotice(msg) {

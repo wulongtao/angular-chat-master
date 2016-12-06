@@ -37,6 +37,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             userActive : 0,
             touserActive : {},
             queActive : 0,
+            quePage : 1, //问题列表分页
 
             isLoading : 0,
             hasMoreQue : 1,
