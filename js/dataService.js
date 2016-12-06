@@ -21,6 +21,9 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
                 content : "",
                 contentType : maConstants.contentType.TYPE_TEXT,
             },
+            userSendTimer : { //用户发送问题的计时状态
+
+            },
             queSend : {
                 lat : 0,
                 lng : 0,
@@ -37,6 +40,10 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
 
             isLoading : 0,
             hasMoreQue : 1,
+
+            userBadge : {}, //用户接收新消息的badge显示
+            badge : badge, //设置uid-toUserId-qid的badge
+            
         },
 
 
@@ -112,6 +119,10 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             this.chatlogs = microchat.chatlogs;
         }
 
+        for (var i = 0; i < this.users.length; i++) {
+            this.uiVar.userBadge[this.users[i]['uid']] = {};
+        }
+
         return microchat;
     }
 
@@ -128,6 +139,13 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             nick : user.nick,
             avatar : user.avatar
         });
+
+        if (this.tousers[user.uid] === undefined) {
+            this.tousers[user.uid] = [];
+        }
+        if (this.uiVar.userBadge[user.uid] === undefined) {
+            this.uiVar.userBadge[user.uid] = {};
+        }
         save();
     }
 
@@ -153,6 +171,11 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
     }
 
     function addToUser(uid, touserInfo) {
+        for (var i = 0; i < this.tousers[uid].length; i++) {
+            if (touserInfo.uid===this.tousers[uid][i].uid && touserInfo.qid===this.tousers[uid][i].qid) {
+                return false;
+            }
+        }
         this.tousers[uid].push({
             uid : touserInfo.uid,
             nick : touserInfo.nick,
@@ -160,7 +183,8 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             qid : touserInfo.qid,
             contentType : touserInfo.contentType,
             content : touserInfo.content,
-            address : touserInfo.address
+            address : touserInfo.address,
+            askUserId : touserInfo.askUserId,
         });
         save();
     }
@@ -324,6 +348,22 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         this.touserInfo.content = data.content ? data.content : '客服聊天系统';
         this.touserInfo.contentType = data.contentType ? data.contentType : maConstants.contentType.TYPE_TEXT;
         this.touserInfo.address = data.address ? data.address : "";
+        this.touserInfo.askUserId = data.askUserId ? data.askUserId : 0;
+    }
+    
+    function badge(badge, uid, toUserId, qid) {
+        uid = typeof uid !== 'undefined' ?  uid : undefined;
+        toUserId = typeof toUserId !== 'undefined' ?  toUserId : 0;
+        qid = typeof qid !== 'undefined' ?  qid : 0;
+
+        if (uid === undefined) return false;
+        if (toUserId === 0 && (this.userActive !== uid || badge === 0)) {
+            this.userBadge[uid].value = badge;
+        } else if (toUserId!==data.touserInfo.uid || data.touserInfo.uid===0 || qid!==data.touserInfo.qid || badge===0) {
+            this.userBadge[uid][toUserId+'-'+qid] = badge;
+        }
+
+        return true;
     }
 
 

@@ -18,6 +18,118 @@ ul , li {
 ::-webkit-scrollbar-thumb:vertical:hover{background-color:rgba(0,0,0,.35)}
 ::-webkit-scrollbar-thumb:vertical:active{background-color:rgba(0,0,0,.38)}
 
+/* when hiding the thing */
+.ng-hide-add         {
+	-webkit-animation:0.5s lightSpeedOut ease;
+	animation:0.5s lightSpeedOut ease;
+}
+
+/* when showing the thing */
+.ng-hide-remove      {
+	-webkit-animation:0.5s flipInX ease;
+	animation:0.5s flipInX ease;
+}
+
+/* ANIMATIONS (FROM ANIMATE.CSS) */
+
+/* flip in */
+@-webkit-keyframes flipInX {
+	0% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+		-webkit-transition-timing-function: ease-in;
+		transition-timing-function: ease-in;
+		opacity: 0;
+	}
+
+	40% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+		-webkit-transition-timing-function: ease-in;
+		transition-timing-function: ease-in;
+	}
+
+	60% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+		opacity: 1;
+	}
+
+	80% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+	}
+
+	100% {
+		-webkit-transform: perspective(400px);
+		transform: perspective(400px);
+	}
+}
+
+@keyframes flipInX {
+	0% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+		-ms-transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, 90deg);
+		-webkit-transition-timing-function: ease-in;
+		transition-timing-function: ease-in;
+		opacity: 0;
+	}
+
+	40% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+		-ms-transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, -20deg);
+		-webkit-transition-timing-function: ease-in;
+		transition-timing-function: ease-in;
+	}
+
+	60% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+		-ms-transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, 10deg);
+		opacity: 1;
+	}
+
+	80% {
+		-webkit-transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+		-ms-transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+		transform: perspective(400px) rotate3d(1, 0, 0, -5deg);
+	}
+
+	100% {
+		-webkit-transform: perspective(400px);
+		-ms-transform: perspective(400px);
+		transform: perspective(400px);
+	}
+}
+
+/* light speed out */
+@-webkit-keyframes lightSpeedOut {
+	0% {
+		opacity: 1;
+	}
+
+	100% {
+		-webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
+		transform: translate3d(100%, 0, 0) skewX(30deg);
+		opacity: 0;
+	}
+}
+
+@keyframes lightSpeedOut {
+	0% {
+		opacity: 1;
+	}
+
+	100% {
+		-webkit-transform: translate3d(100%, 0, 0) skewX(30deg);
+		-ms-transform: translate3d(100%, 0, 0) skewX(30deg);
+		transform: translate3d(100%, 0, 0) skewX(30deg);
+		opacity: 0;
+	}
+}
+
 /*加载进图条样式*/
 .spinner {
 	/*margin: 100px auto 0;*/
@@ -66,9 +178,6 @@ ul , li {
 
 /*地图相关样式*/
 #amap {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
 	width: 463px;
 	height: 300px;
 	z-index: 150;
@@ -77,16 +186,23 @@ ul , li {
 	z-index: 160;
 	display: flex;
 	flex-direction: column;
-	align-content: center;
-	align-items: center;
-	justify-content: space-around;
-	transform: translateY(20px);
 	width: 500px;
 	height: 190px;
 	background-color: #ffffff;
 	border-radius: 15px;
 	box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
 	padding: 15px;
+}
+
+.amap .que-content {
+	z-index: 200;
+	height:70px;
+	width:100%;
+	background-color: #ffffff;
+	border-radius: 5px;
+	border:none;
+	box-shadow: 0 0 1em rgba(0, 0, 0, 0.2);
+	padding:8px;
 }
 
 .md.md-que .que-address-info {
@@ -101,8 +217,10 @@ ul , li {
 .md.md-que .que-address-info:focus {
 	box-shadow: 0 0 1em #1ABC9C;
 	border-radius: 8px;
+	border:none;
 }
 .amap-sug-result {
+	border: none;
 	z-index: 8500;
 }
 
@@ -170,6 +288,28 @@ ul , li {
     
 }
 
+.chat-bar .user-list .user-item .avatar-badge {
+	position: relative;
+	width: 40px;
+    height: 40px;
+}
+
+.chat-bar .user-list .user-item .avatar-badge .badge {
+	display: inline-block;
+	position: absolute;
+	right: 0px;
+	top: 1px;
+	width: 12px;
+	height: 12px;
+	background-color: #FF3B30;
+	border-radius: 100%;
+	border: 2px solid #D9D9D9;
+}
+
+.chat-bar .user-list .user-item.user-active .avatar-badge .badge {
+	border: 2px solid #F3F3F3;
+}
+
 .chat-bar .user-list .user-item .user-nick {
 	width: 120px;
 	overflow: hidden;
@@ -180,16 +320,16 @@ ul , li {
     color: #333;
 }
 
-.chat-bar .user-list .user-item .fa {
+.chat-bar .user-list .user-item > .fa {
 	display: none;
 	color: #555;
 }
 
-.chat-bar .user-list .user-item:hover .fa {
+.chat-bar .user-list .user-item:hover > .fa {
 	display: inline-block;
 }
 
-.chat-bar .user-list .user-item .fa:hover {
+.chat-bar .user-list .user-item > .fa:hover {
 	color: #c00;
 }
 
@@ -482,7 +622,7 @@ ul , li {
 	transition: all 0.3s;
 }
 
-.chat-wrapper .chat-bar .user-list .add-que:hover {
+.chat-wrapper .chat-bar .user-list .add-que:hover,.chat-wrapper .chat-bar .user-list .add-que-active {
 	color: #FFFFFF;
 	background: #33DF83;
 }

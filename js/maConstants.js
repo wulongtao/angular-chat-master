@@ -7,6 +7,9 @@ angular.module('maConstants', []).factory('maConstants', function () {
         //发送心跳包的时间间隔,客户端每隔5分钟发送一个包给服务端
         PING_TIMES : 270000,
 
+        //还原默认文字
+        CHAT_HELLO_TEXT : '很幸运收到您的提问，我们可以开始聊天了~',
+
         //错误信息
         message : {
             empTyLoginParams : '手机号或密码为空',

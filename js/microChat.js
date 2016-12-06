@@ -1,6 +1,6 @@
-var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService']);
+var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', 'angular-web-notification']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', 'webNotification', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService, webNotification) {
 
 
     //初始化wsFactory
@@ -46,7 +46,34 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
     //发送问题
     $scope.queSend = function () {
-        console.log(dataService.uiVar.queSend);
+
+        webNotification.showNotification('Example Notification', {
+            body: 'Notification Text...',
+            icon: 'my-icon.ico',
+            onClick: function onNotificationClicked() {
+                console.log('Notification clicked.');
+            },
+            autoClose: 4000 //auto close the notification after 4 seconds (you can manually close it via hide function)
+        }, function onShow(error, hide) {
+            if (error) {
+                window.alert('Unable to show notification: ' + error.message);
+            } else {
+                console.log('Notification Shown.');
+
+                setTimeout(function hideNotification() {
+                    console.log('Hiding notification....');
+                    hide(); //manually close the notification (you can skip this if you use the autoClose option)
+                }, 5000);
+            }
+        });
+
+        return ;
+
+        if (!common.isValid(dataService.uiVar.queSend) || !common.isValid(dataService.uiVar.userActive)) {
+            common.toast('info', '请选择(输入)地址或内容');
+            return ;
+        }
+        wsService.sendQue(dataService.uiVar.userActive, dataService.uiVar.queSend);
     };
 
 
@@ -59,14 +86,16 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
         dataService.uiVar.touserActive.uid = 0;
         dataService.uiVar.touserActive.qid = 0;
+
+        dataService.uiVar.badge(0, uid); //取消badge显示
         initParams();
     };
 
     //右侧对方用户列表选择
-    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid) {
+    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId) {
         dataService.uiVar.touserActive.uid = uid;
         dataService.uiVar.touserActive.qid = qid;
-        dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar, content:content, contentType:contentType, address:address});
+        dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar, content:content, contentType:contentType, address:address, askUserId : askUserId});
 
         //获取聊天记录数据并显示
         dataService.replaceChatlogInfo(dataService.uiVar.userActive, uid, qid);
@@ -75,6 +104,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         //TODO 大于3会显示滚动条，这里需要优化
         if ($scope.chatlogInfo.length >= 3) { $scope.scrollVisible = 1; }
         else { $scope.scrollVisible = 0; }
+
+        dataService.uiVar.badge(0, dataService.uiVar.userActive, uid, qid); //取消badge显示
     };
     //删除右侧对方用户列表
     $scope.rmToUser = function (uid, qid, $event) {
@@ -94,6 +125,10 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         initParams();
 
     };
+    //badge显示相关
+    $scope.checkShowBadge = function (uid, qid) {
+        return dataService.uiVar.userBadge[dataService.uiVar.userActive][uid+'-'+qid];
+    }
 
     //播放语音相关
     $scope.playQAudio = function () {
@@ -154,7 +189,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     //用户发送文字消息
     $scope.sendMessage = function() {
         var content = common.removeBlank($scope.userSend.content);
-        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, content, $scope.touser.qid);
+        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, content, $scope.touser.qid, $scope.touser.askUserId);
         $scope.chatlogInfo = dataService.chatlogInfo;
     };
     //发送图片

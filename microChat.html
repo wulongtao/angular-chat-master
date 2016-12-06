@@ -18,13 +18,15 @@
 	<script type="text/javascript" src="js/lib/scrollglue.js"></script>
 	<script type="text/javascript" src="js/lib/ng-file-upload.min.js"></script>
 	<script type="text/javascript" src="js/lib/ng-file-upload-shim.min.js"></script>
+	<script type="text/javascript" src="js/lib/Notification.min.js"></script>
+	<script type="text/javascript" src="js/lib/angular-web-notification.js"></script>
 
 	<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.3&key=5a544ab16a76621a77ddb0e447847165&plugin=AMap.Autocomplete,AMap.PlaceSearch"></script>
 
 </head>
 <body style="margin: 20px;">
 <div ng-controller="CtlChat" class="wrapper" ng-click="initEmojiActive()">
-	
+
 
 	<div class="chat-wrapper">
 		<!-- 左侧栏 -->
@@ -37,7 +39,7 @@
 				</li>
 				<!--客服账号列表-->
                     <li class="user-item" ng-repeat="user in users | filter:{nick:searchNick} track by $index" ng-class="{true : 'user-active'}[user.uid==uiVar.userActive]" ng-click="userClick(user.uid)">
-					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
+					<div class="avatar-badge"><img class="user-avatar" ng-src=" {{user.avatar}} "><i ng-show="uiVar.userBadge[user.uid]['value']" class="badge" aria-hidden="true"></i></div> <!-- 头像 -->
 					<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="userLogout(user.uid)"></i>
 				</li>
@@ -48,7 +50,7 @@
 		<div class="chat-box">
 			<!-- 标题栏 -->
 			<div class="chat-title">
-				<img class="target-user-avatar" lazy-img=" {{touser.avatar}} ">
+				<img class="target-user-avatar" ng-src=" {{touser.avatar}} ">
 				<div class="inner-chat-title">
 					<span class="target-user-nick"> {{touser.nick}} <br> <span class="target-user-address">(地址: {{touser.address}})</span> </span>
 					<span class="que-content" ng-if="touser.contentType==contentType.TYPE_TEXT" ng-bind-html="deliberatelyTrustDangerousSnippet(touser.content)"></span>
@@ -66,10 +68,10 @@
 				<ul>
 					<li ng-repeat="clog in chatlogInfo track by $index">
 						<div class="chat-item" ng-class="{true : 'mine'}[clog.uid==uiVar.userActive]">
-							<div class="avatar"><img lazy-img=" {{clog.avatar}} "></div>
+							<div class="avatar"><img ng-src=" {{clog.avatar}} "></div>
 							<div class="item-wrapper" >
-								<div class="top" > 
-									<span> {{clog.nick}} </span> 
+								<div class="top" >
+									<span> {{clog.nick}} </span>
 									<span> {{clog.addTime| date:'yyyy-MM-dd HH:mm:ss'}} </span>
 								</div>
 								<div class="chat-text" ng-bind-html="deliberatelyTrustDangerousSnippet(clog.content)">
@@ -102,11 +104,12 @@
 					<input class="filter-tool" ng-model="searchTargetNick" type="text">
 					<span ng-click="showQuestion()" class="user-add">？</span>
 				</li>
-				<li class="user-item user-active add-que" ng-click="showAddQueDialog()">提问问题</li>
+				<li class="user-item user-active add-que" ng-hide="uiVar.userSendTimer[uiVar.userActive]"  ng-click="showAddQueDialog()">提问问题</li>
+				<li class="user-item user-active add-que add-que-active" ng-show="uiVar.userSendTimer[uiVar.userActive]"  ng-click="showAddQueDialog()">等待回答{{uiVar.userSendTimer[uiVar.userActive]}}</li>
 				<li class="user-item" ng-repeat="user in tousers|filter:{nick:searchTargetNick} track by $index" ng-class="{true : 'user-active'}[user.uid==uiVar.touserActive.uid&&user.qid==uiVar.touserActive.qid]"
-					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid)">
-					<img class="user-avatar" lazy-img=" {{user.avatar}} "> <!-- 头像 -->
-						<span class="user-nick"> {{user.nick}} </span>
+					ng-click="touserClick(user.uid,user.nick, user.avatar,user.content,user.contentType,user.address,user.qid,user.askUserId)">
+                    <div class="avatar-badge"><img class="user-avatar" ng-src=" {{user.avatar}} "><i ng-show="checkShowBadge(user.uid,user.qid)" class="badge" aria-hidden="true"></i></div> <!-- 头像 -->
+					<span class="user-nick"> {{user.nick}} </span>
 					<i class="fa fa-times-circle fa-lg" aria-hidden="true" ng-click="rmToUser(user.uid, user.qid, $event)"></i>
 				</li>
 			</ul>
@@ -198,9 +201,7 @@
 			<i class="fa fa-times fa-lg" ng-click="showAddQueDialog()" aria-hidden="true"></i>
 		</div>
 		<div id="amap" class="amap md-content">
-			<div class="que-content">
-				<input type="text">
-			</div>
+			<textarea class="que-content" ng-model="uiVar.queSend.content" placeholder="请输入问题内容……"></textarea>
 		</div>
 		<div class="md-footer">
 			<span ng-click="queSend()" class="btn btn-success">发送问题</span>
