@@ -2,9 +2,10 @@
  * 此模块存放一些公共的方法
  * Created by raid on 2016/11/17.
  */
-angular.module('common', ['toaster', 'angular-web-notification', 'ngAnimate']).factory('common', function (toaster, webNotification, $window) {
+angular.module('common', ['toaster', 'angular-web-notification', 'oitozero.ngSweetAlert', 'ngAnimate']).factory('common', function (toaster, webNotification, SweetAlert, $window) {
     var common = {
         toast : toast, //toast消息
+        swal : swal, //sweet alert弹出框
         isValid : isValid, //判断参数是否为空
         htmlToPlaintext : htmlToPlaintext, //去掉字符串中的html标签
         getCurrentTime : getCurrentTime, //获取当前时间
@@ -21,6 +22,29 @@ angular.module('common', ['toaster', 'angular-web-notification', 'ngAnimate']).f
         toaster.pop({
             type: type, body: body});
     };
+    
+    function swal(type, text, callback, cancelCallback) {
+        callback = callback !== 'undefined' ? callback : undefined;
+        cancelCallback = cancelCallback !== 'undefined' ? cancelCallback : undefined;
+        switch (type) {
+            case 'confirm' :
+                SweetAlert.swal({
+                        title: "",
+                        text: text,
+                        showCancelButton: true,
+                        confirmButtonText: "确定",
+                        cancelButtonText: "取消",
+                        closeOnConfirm: true},
+                    function(isConfirm){
+                        if (isConfirm) callback && callback();
+                        else if (!isConfirm && cancelCallback!==undefined) {
+                            cancelCallback && cancelCallback();
+                        }
+                    });
+                break;
+        }
+
+    }
 
     /**
      * 判断字段是否为 ''、null、undefined

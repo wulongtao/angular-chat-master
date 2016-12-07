@@ -6,6 +6,7 @@
 	<link rel="stylesheet" type="text/css" href="css/lib/font-awesome.min.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/initialize.min.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/toaster.min.css">
+	<link rel="stylesheet" type="text/css" href="css/lib/sweetalert.css">
 	<link rel="stylesheet" type="text/css" href="css/lib/emoji.css">
 	<link rel="stylesheet" type="text/css" href="css/micro-chat.css">
 
@@ -13,6 +14,8 @@
 	<script type="text/javascript" src="js/lib/angular-contenteditable.js"></script>
 	<script type="text/javascript" src="js/lib/angular-animate.min.js"></script>
 	<script type="text/javascript" src="js/lib/toaster.min.js"></script>
+	<script type="text/javascript" src="js/lib/sweet-alert.min.js"></script>
+	<script type="text/javascript" src="js/lib/SweetAlert.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-lazy-img.min.js"></script>
 	<script type="text/javascript" src="js/lib/angular-sanitize.min.js"></script>
 	<script type="text/javascript" src="js/lib/scrollglue.js"></script>
@@ -58,7 +61,7 @@
                         <audio class="qAudio">
                             <source ng-src="{{touser.content | trustUrl}}">
                         </audio>
-						<i class="fa fa-volume-up" aria-hidden="true"></i>
+						<i class="fa fa-volume-up" aria-hidden="true" ></i>
 					</div>
 
 				</div>
@@ -86,13 +89,15 @@
 				<i class="fa fa-smile-o fa-lg" aria-hidden="true" ng-class="{true : 'active'}[emojiActive==1]" ng-click="showEmojiBox($event)"></i>
 				<label ngf-select="uploadImage($file)" class="fa fa-picture-o fa-lg" aria-hidden="true">
 				</label>
+				<i class="fa fa-handshake-o" aria-hidden="true" ng-click="addFriend()"></i>
+
 			</div>
-			<div ng-model="userSend.content" class="chat-textarea" contenteditable="true" ng-model="model"
+			<div ng-model="userSend.content" class="chat-textarea" contenteditable="{{checkEditable()}}" ng-model="model"
 				 select-non-editable="true" strip-br="true" ng-enter="sendMessage()">
 			</div>
 			<!-- 聊天框尾部 -->
 			<div class="chat-footer">
-				<span class="btn-send" ng-click="sendMessage()">发送</span>
+				<button class="btn-send" ng-disabled="checkAnswerEveluate()" ng-click="sendMessage()">发送</button>
 			</div>
 		</div>
 

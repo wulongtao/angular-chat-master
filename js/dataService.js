@@ -36,6 +36,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
 
             userActive : 0,
             touserActive : {},
+            touserChanges : 0,//一个常量监听touserActive的变化
             queActive : 0,
             quePage : 1, //问题列表分页
 
@@ -65,6 +66,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         removeUser : removeUser, //删除用户
         getUser : getUser, //获取用户
         addToUser : addToUser, //添加聊天的另外一个用户
+        toUserAnswerEvaluate : toUserAnswerEvaluate, //对方采纳回答，把tousers中相应的questionStatus设置为1
         removeToUser : removeToUser, //删除
         getToUser : getToUser, //获取
         getToUsers : getToUsers, //获取
@@ -186,8 +188,19 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             content : touserInfo.content,
             address : touserInfo.address,
             askUserId : touserInfo.askUserId,
+            questionStatus : 0, //问题的状态，1为已采纳
         });
         save();
+    }
+
+    function toUserAnswerEvaluate(uid, toUserId, qid) {
+        for (var i = 0; i < this.tousers[uid].length; i++) {
+            if (toUserId===this.tousers[uid][i].uid && qid===this.tousers[uid][i].qid) {
+                this.tousers[uid][i].questionStatus = 1;
+                return true;
+            }
+        }
+        return false;
     }
 
     function removeToUser(uid, touserId) {
@@ -206,12 +219,12 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         return false;
     }
 
-    function getToUser(uid, touserId) {
+    function getToUser(uid, touserId, qid) {
         if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]) || this.tousers.length === 0)
             return null;
 
         for (var i = 0; i < this.tousers[uid].length; i++) {
-            if (touserId == this.tousers[uid][i].uid) {
+            if (touserId === this.tousers[uid][i].uid && qid === this.tousers[uid][i].qid) {
                 return this.tousers[uid][i];
             }
         }
@@ -360,7 +373,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         if (uid === undefined) return false;
         if (toUserId === 0 && (this.userActive !== uid || badge === 0)) {
             this.userBadge[uid].value = badge;
-        } else if (toUserId!==data.touserInfo.uid || data.touserInfo.uid===0 || qid!==data.touserInfo.qid || badge===0) {
+        } else if (toUserId!==data.touserInfo.uid || data.touserInfo.uid===0 || qid!==data.touserInfo.qid || badge===0 || uid!==data.uiVar.userActive) {
             this.userBadge[uid][toUserId+'-'+qid] = badge;
         }
 

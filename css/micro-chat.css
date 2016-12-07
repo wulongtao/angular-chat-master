@@ -568,6 +568,7 @@ ul , li {
     background-color: #33DF83;
     color: #fff;
     border-radius: 3px;
+	border: none;
     cursor: pointer;
 }
 
@@ -967,7 +968,7 @@ ul , li {
 	z-index: 19891030;
 	position: absolute;
 	top: 140px;
-	left: 201px;
+	left: 438px;
 	width: 312px;
 	height:208px;
 	padding: 10px;

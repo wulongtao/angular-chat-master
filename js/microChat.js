@@ -1,6 +1,6 @@
 var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService, $interval) {
 
 
     //初始化wsFactory
@@ -70,9 +70,12 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     };
 
     //右侧对方用户列表选择
-    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId) {
-        dataService.uiVar.touserActive.uid = uid;
-        dataService.uiVar.touserActive.qid = qid;
+    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId, initBadge) {
+        initBadge = initBadge !== 'undefined' ? initBadge : true;
+
+        dataService['uiVar']['touserActive']['uid'] = uid;
+        dataService['uiVar']['touserActive']['qid'] = qid;
+        dataService['uiVar']['touserActive']['askUserId'] = askUserId;
         dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar, content:content, contentType:contentType, address:address, askUserId : askUserId});
 
         //获取聊天记录数据并显示
@@ -83,7 +86,9 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         if ($scope.chatlogInfo.length >= 3) { $scope.scrollVisible = 1; }
         else { $scope.scrollVisible = 0; }
 
-        dataService.uiVar.badge(0, dataService.uiVar.userActive, uid, qid); //取消badge显示
+        if (initBadge) {
+            dataService.uiVar.badge(0, dataService.uiVar.userActive, uid, qid); //取消badge显示
+        }
     };
     //删除右侧对方用户列表
     $scope.rmToUser = function (uid, qid, $event) {
@@ -167,6 +172,10 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     //用户发送文字消息
     $scope.sendMessage = function() {
         var content = common.removeBlank($scope.userSend.content);
+        if (!common.isValid([dataService.uiVar.userActive, $scope.touser.uid, content])) {
+            common.toast('info', '发送信息参数错误');
+            return ;
+        }
         wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, content, $scope.touser.qid, $scope.touser.askUserId);
         $scope.chatlogInfo = dataService.chatlogInfo;
     };
@@ -187,6 +196,13 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.addEmojiToContent = function (code, html) {
         dataService.uiVar.userSend.content += html + "&nbsp;";
     };
+    
+    //添加好友
+    $scope.addFriend = function () {
+        common.swal('confirm', '你确定加他为好友么？', function () {
+            wsService.sendFriendApply(dataService.uiVar.userActive, dataService.uiVar.touserActive.uid);
+        });
+    };
 
 
     //如果有用户，则默认第一个用户选中
@@ -195,14 +211,60 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         $scope.userClick(dataService.uiVar.userActive);
     }
 
-    $scope.$watch('uiVar.toUserActive.uid', function () {
-        console.log("abc");
+    /**
+     * 监听uiVar.touserActive.uid值的变化，相应调用一下点击事件
+     */
+    $scope.$watch('uiVar.touserChanges', function () {
+        var touserInfo = dataService.getToUser(dataService.uiVar.userActive, dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
+        if (touserInfo === null) return ;
+
+        $scope.touserClick(touserInfo['uid'], touserInfo['nick'], touserInfo['avatar'], touserInfo['content']
+            , touserInfo['contentType'], touserInfo['address'], touserInfo['qid'], touserInfo['askUserId'], false);
     });
 
+    /**
+     * 监听左侧列表用户选中情况的变化
+     */
+    $scope.$watch('uiVar.userActive', function () {
+        if (dataService.uiVar.userActive === 0) return ;
+        $scope.userClick(dataService.uiVar.userActive);
+    });
+
+    /**
+     * 判断对应用户问题的聊天是否已被点赞
+     */
+    $scope.checkAnswerEveluate = function () {
+        var touser = dataService.getToUser(dataService.uiVar.userActive
+            , dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
+
+        if (touser === null) return false;
+
+        return touser['questionStatus'];
+    };
+
+    $scope.checkEditable = function () {
+        var touser = dataService.getToUser(dataService.uiVar.userActive
+            , dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
+
+        if (touser === null) return false;
+
+        console.log(touser['questionStatus']);
+        return !touser['questionStatus'];
+    }
+
+    /**
+     * 登录
+     * @param phone
+     * @param passwd
+     */
     function doLogin(phone, passwd) {
         wsService.addUser(phone, passwd, $scope)
     }
 
+    /**
+     * 注销
+     * @param uid
+     */
     function userLogout(uid) {
         wsService.logout(uid);
     }
@@ -262,7 +324,9 @@ app.directive('scrolly', function () {
     };
 });
 
-
+/**
+ * 处理资源路径，变成真正的链接地址
+ */
 app.filter("trustUrl", ['$sce', function ($sce) {
     return function (recordingUrl) {
         return $sce.trustAsResourceUrl(recordingUrl);
