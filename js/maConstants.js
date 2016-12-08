@@ -38,6 +38,10 @@ angular.module('maConstants', []).factory('maConstants', function () {
             TYPE_TEXT : 1, //文字
             TYPE_IMAGE : 2, //图片
             TYPE_AUDIO : 3, //语音
+            TYPE_MAP : 4, //地图位置
+            TYPE_MERCHANT : 5, //商家
+            TYPE_ANSWER : 6, //快捷回复中的回答
+            TYPE_QUESTION : 9, //快捷回复中的问题
         },
 
 

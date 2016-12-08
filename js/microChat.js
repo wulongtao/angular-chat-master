@@ -1,11 +1,12 @@
 var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyImg', 'luegg.directives', 'chat', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService']);
 
-app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService, $interval) {
+app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
 
 
     //初始化wsFactory
     wsService.init({type : 1});
     $scope.emojis = emojiFactory.emj('html_to_html5');
+    $scope.contentType = maConstants.contentType;
     initParams();
 
     $scope.scrollVisible = 1;
@@ -71,7 +72,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
     //右侧对方用户列表选择
     $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId, initBadge) {
-        initBadge = initBadge !== 'undefined' ? initBadge : true;
+        initBadge = initBadge !== undefined ? initBadge : true;
 
         dataService['uiVar']['touserActive']['uid'] = uid;
         dataService['uiVar']['touserActive']['qid'] = qid;
@@ -100,7 +101,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
             return false;
         }
 
-        rs = dataService.removeToUser(dataService.uiVar.userActive, uid);
+        rs = dataService.removeToUser(dataService.uiVar.userActive, uid, qid);
         if (rs === false) {
             common.toast('info', '删除失败，请刷新页面后重试');
             return false;
@@ -176,12 +177,61 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
             common.toast('info', '发送信息参数错误');
             return ;
         }
-        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.touser.uid, $scope.userSend.contentType, content, $scope.touser.qid, $scope.touser.askUserId);
+        wsService.sendChatMsg(dataService.uiVar.userActive, $scope.uiVar.touserActive.uid, $scope.userSend.contentType, content, $scope.uiVar.touserActive.qid, $scope.touser.askUserId);
         $scope.chatlogInfo = dataService.chatlogInfo;
     };
     //发送图片
     $scope.uploadImage = function (file) {
         wsService.sendChatImage(file);
+    };
+    //提问者评价（采纳）
+    $scope.sendEvaluate = function () {
+        common.swal('confirm', '你要采纳该回答么？', function () {
+            wsService.sendEvaluateNotice(dataService.uiVar.userActive
+                , dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
+        });
+    };
+    //感谢回答者
+    $scope.thankUser = function () {
+        common.swal('confirm', '你要感谢该回答么？', function () {
+            wsService.thankUser(dataService.uiVar.userActive
+                , dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
+        });
+    };
+    //接收到的图片形式是（"宽度,高度,缩略图图片地址，原图地址"）需要截取最后一个字段为图片地址
+    $scope.thumbnailImg = function (content, contentType) {
+        switch (contentType) {
+            case maConstants.contentType.TYPE_IMAGE:
+                return content.split(',')[2];
+                break;
+
+            case maConstants.contentType.TYPE_MAP:
+                return content.split(',')[3];
+                break;
+        }
+
+    };
+    //获取地址
+    $scope.mapAddress = function (content) {
+        return content.split(',')[2];
+    };
+
+    //点击查看原图
+    $scope.originalImg = function (content, contentType) {
+        switch (contentType) {
+            case maConstants.contentType.TYPE_IMAGE:
+                content = content.split(',')[3];
+                break;
+            case maConstants.contentType.TYPE_MAP:
+                content = content.split(',')[3];
+                var index = content.indexOf("/thumb/");
+                if (index != -1) {
+                    content = content.substring(0, index+1) + content.substring(index+6, content.length);
+                }
+                break;
+        }
+
+        common.swal('image', content);
     };
 
     //emoji表情栏显示
@@ -231,15 +281,28 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     });
 
     /**
-     * 判断对应用户问题的聊天是否已被点赞
+     * 采纳相关判断
+     * @param type 1->判断是否已经被采纳，2->判断是否可以采纳
+     * @returns {*}
      */
-    $scope.checkAnswerEveluate = function () {
+    $scope.checkAnswerEveluate = function (type) {
         var touser = dataService.getToUser(dataService.uiVar.userActive
             , dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
-
         if (touser === null) return false;
+        switch (type) {
+            case 1:
+                return touser['questionStatus'];
+                break;
 
-        return touser['questionStatus'];
+            case 2:
+                return !touser['questionStatus'] && dataService.uiVar.userActive===touser['askUserId'];
+                break;
+
+            case 3:
+                return dataService.uiVar.userActive===touser['askUserId'];
+                break;
+        }
+
     };
 
     $scope.checkEditable = function () {
@@ -248,9 +311,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
 
         if (touser === null) return false;
 
-        console.log(touser['questionStatus']);
         return !touser['questionStatus'];
-    }
+    };
 
     /**
      * 登录

@@ -42,6 +42,13 @@ angular.module('common', ['toaster', 'angular-web-notification', 'oitozero.ngSwe
                         }
                     });
                 break;
+
+            case 'image':
+                SweetAlert.swal({
+                    title: "<div style='overflow: scroll;max-height: 500px;'><img src='"+text+"'></div>",
+                    // text: 'A custom <span style="color:#F8BB86">html<span> message.',
+                    html: true});
+                break;
         }
 
     }

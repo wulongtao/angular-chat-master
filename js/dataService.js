@@ -188,6 +188,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             content : touserInfo.content,
             address : touserInfo.address,
             askUserId : touserInfo.askUserId,
+            randId : touserInfo.randId,
             questionStatus : 0, //问题的状态，1为已采纳
         });
         save();
@@ -197,19 +198,20 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         for (var i = 0; i < this.tousers[uid].length; i++) {
             if (toUserId===this.tousers[uid][i].uid && qid===this.tousers[uid][i].qid) {
                 this.tousers[uid][i].questionStatus = 1;
+                save();
                 return true;
             }
         }
         return false;
     }
 
-    function removeToUser(uid, touserId) {
+    function removeToUser(uid, touserId, qid) {
 
         if (!this.tousers[uid] || !Array.isArray(this.tousers[uid]))
             return false;
 
         for (var i = 0; i < this.tousers[uid].length; i++) {
-            if (this.tousers[uid][i].uid === touserId) {
+            if (this.tousers[uid][i].uid === touserId && this.tousers[uid][i].qid === qid) {
                 this.tousers[uid].splice(i, 1);
                 save();
                 return true;
@@ -363,6 +365,13 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         this.touserInfo.contentType = data.contentType ? data.contentType : maConstants.contentType.TYPE_TEXT;
         this.touserInfo.address = data.address ? data.address : "";
         this.touserInfo.askUserId = data.askUserId ? data.askUserId : 0;
+
+        if (data.askUserId === this.uiVar.userActive) {
+            var user = this.getUser(data.askUserId);
+            this.touserInfo.uid = user.uid;
+            this.touserInfo.nick = user.nick;
+            this.touserInfo.avatar = user.avatar;
+        }
     }
     
     function badge(badge, uid, toUserId, qid) {

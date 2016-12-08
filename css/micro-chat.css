@@ -494,6 +494,23 @@ ul , li {
     border-width: 10px;
 }
 
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text .chat-image {
+	width: 160px;
+	border-radius: 5px;
+
+	-webkit-transition: all 0.5s;
+	-moz-transition: all 0.5s;
+	-ms-transition: all 0.5s;
+	-o-transition: all 0.5s;
+	transition: all 0.5s;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text .chat-image:hover {
+	cursor: pointer;
+	-webkit-filter: brightness(.8);
+	filter: brightness(.8);
+}
+
 .chat-wrapper .chat-box .chat-main .chat-item.mine .item-wrapper .chat-text {
 	background-color: #33DF83;
     color: #fff;
@@ -503,6 +520,88 @@ ul , li {
     right: -10px;
     left: initial;
     border-color: #33DF83 transparent transparent;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-map {
+	position: relative;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text a {
+	text-decoration: none;
+	color: #444;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant {
+	display: flex;
+	flex-direction: column;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant .mer-title {
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 3px;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant .mer-details {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant .mer-details .cover-img,
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant .mer-details .cover-img img{
+	width:60px;
+	height:60px;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-merchant .mer-details .mer-info {
+	display: flex;
+	flex-direction: column;
+	font-size: 12px;
+	color: #8e908c;
+	margin-left: 6px;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-answer,
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-que {
+	display: flex;
+	flex-direction: column;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-answer .que-title,
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-que .que-title{
+	padding-left: 25px;
+	background: url(../images/ask-icon.png) no-repeat;
+	background-size: 20px;
+	max-width: 260px;
+	color: #444;
+	font-weight: bold;
+	margin-bottom: 5px;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-answer .que-details {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	color: #8e908c;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-answer .que-details .desc {
+	margin-left: 10px;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-que {
+	width: 200px;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-que .ans-count {
+	color: #8e908c;
+	padding-left: 24px;
+}
+
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-map .map-address {
+	position: absolute;
+	bottom: 0;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	margin: 10px 15px 10px 0;
+	max-height: 23px;
+	overflow: hidden;
+	color: #fff;
+	background: rgba(0,0,0,0.5);
 }
 
 .chat-wrapper .chat-box .chat-tool {
@@ -558,22 +657,33 @@ ul , li {
 	margin-right: 15px;
 }
 
-.chat-wrapper .chat-box .chat-footer .btn-send {
+.chat-wrapper .chat-box .chat-footer .btn {
 	display: inline-block;
     vertical-align: top;
     font-size: 14px;
     line-height: 32px;
     margin-left: 5px;
     padding: 0 20px;
-    background-color: #33DF83;
     color: #fff;
     border-radius: 3px;
 	border: none;
     cursor: pointer;
 }
 
+.chat-wrapper .chat-box .chat-footer .btn-send {
+	background-color: #33DF83;
+}
+
 .chat-wrapper .chat-box .chat-footer .btn-send:hover {
 	background-color: #22D979;
+}
+
+.chat-wrapper .chat-box .chat-footer .btn-eva {
+	background-color: #E74C3C;
+}
+
+.chat-wrapper .chat-box .chat-footer .btn-eva:hover {
+	background-color: #C0392B;
 }
 
 .chat-wrapper .chat-bar .user-list .left-tool-bar {
