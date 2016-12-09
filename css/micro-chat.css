@@ -30,6 +30,14 @@ ul , li {
 	animation:0.5s flipInX ease;
 }
 
+.sweet-alert {
+	position: fixed;
+	width: inherit;
+	margin: 5% auto; /* Will not center vertically and won't work in IE6/7. */
+	left: 10%;
+	right: 10%;
+}
+
 /* ANIMATIONS (FROM ANIMATE.CSS) */
 
 /* flip in */
@@ -231,6 +239,7 @@ ul , li {
 }
 .chat-wrapper {
 	display: flex;
+	position: relative;
 	flex-direction: row;
 	z-index: 500;
     width: 1000px;
@@ -348,6 +357,39 @@ ul , li {
 	align-items: center;
 	padding: 10px 20px;
 }
+.chat-wrapper .chat-box .chat-title .avatar-info {
+	position: relative;;
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	-ms-transition: all 0.3s;
+	-o-transition: all 0.3s;
+	transition: all 0.3s;
+}
+.chat-wrapper .chat-box .chat-title .avatar-info:hover {
+	cursor: pointer;
+	-webkit-filter: brightness(.5);
+	filter: brightness(.5);
+}
+.chat-wrapper .chat-box .chat-title .avatar-info span {
+	display: none;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	color: #ffffff;
+	padding: 2px 9px;
+	border-radius: 100%;
+	background: rgba(0, 0, 0, 0.3);
+}
+.chat-wrapper .chat-box .chat-title .avatar-info .que-privacy {
+	display: inline-block;
+	font-size: 27px;
+	padding: 5px 12px;
+}
+.chat-wrapper .chat-box .chat-title .avatar-info:hover span{
+	display: inline-block;
+}
 
 .chat-wrapper .chat-box .chat-title .target-user-avatar {
 	width: 50px;
@@ -378,7 +420,7 @@ ul , li {
 	font-size: 14px;
 	color: #BCBCBC;
 	padding-left: 25px;
-	background: url("../images/ask-icon.png") no-repeat;
+	background: url("../../../images/answer-list/ask-icon.png") no-repeat;
 	background-size: 20px;
 }
 
@@ -522,6 +564,22 @@ ul , li {
     border-color: #33DF83 transparent transparent;
 }
 
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-audio {
+	padding: 7px 15px;
+	cursor: pointer;
+}
+
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-audio .que-voice {
+	display: flex;
+	align-items: center;
+	justify-content: space-around;
+	color: #8e908c;
+	width:40px;
+}
+.chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-audio .que-voice .audio-icon {
+	height: 22px;
+}
+
 .chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-map {
 	position: relative;
 }
@@ -566,7 +624,7 @@ ul , li {
 .chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-answer .que-title,
 .chat-wrapper .chat-box .chat-main .chat-item .item-wrapper .chat-text.chat-que .que-title{
 	padding-left: 25px;
-	background: url(../images/ask-icon.png) no-repeat;
+	background: url("../../../images/answer-list/ask-icon.png") no-repeat;
 	background-size: 20px;
 	max-width: 260px;
 	color: #444;
@@ -1027,6 +1085,10 @@ ul , li {
 	margin-top: 30px;
 }
 
+.md .md-footer i {
+	cursor: pointer;
+}
+
 .md .md-footer .btn {
 	display: inline-block;
     padding: 6px 12px;
@@ -1078,7 +1140,7 @@ ul , li {
 	z-index: 19891030;
 	position: absolute;
 	top: 140px;
-	left: 438px;
+	left: 200px;
 	width: 312px;
 	height:208px;
 	padding: 10px;

@@ -15,6 +15,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         addToUser : addToUser, //添加回答用户
         getUserWaitingQuestions : getUserWaitingQuestions, //获取问题列表中的问题信息
         thankUser : thankUser, //感谢回答者
+        setPrivacy : setPrivacy, //设置私密
 
         getInstance : getInstance,
         init : init,
@@ -124,15 +125,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             }
             var userInfo = data.data.userInfo;
             var questionInfo = data.data.questionInfo;
+            if (!questionInfo) questionInfo = {};
             dataService.addToUser(uid, {
                 uid : userInfo.uid,
                 nick : userInfo.nick,
                 avatar : userInfo.avatar,
-                qid : questionInfo.qid,
-                contentType : questionInfo.contentType,
-                content : questionInfo.content,
-                address : questionInfo.address,
-                askUserId : questionInfo.fromUserId,
+                qid : questionInfo.qid ? questionInfo.qid : 0,
+                contentType : questionInfo.contentType ? questionInfo.contentType : 1,
+                content : questionInfo.content ? questionInfo.content : "无",
+                address : questionInfo.address ? questionInfo.fromUserId : "普通聊天，无地址",
+                askUserId : questionInfo.fromUserId ? questionInfo.fromUserId : 0,
+                isQPrivacy : questionInfo.isPrivacy ? questionInfo.isPrivacy : 0,
             });
 
             if (notInit !== true) {
@@ -173,14 +176,25 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
 
     function thankUser(uid, touserId, qid) {
         var touser = dataService.getToUser(uid, touserId, qid);
-        console.log(touser);
         urlService.question.thankUser(uid, touser.randId).then(function (data) {
+            console.log(data);
             if (data.result !== 0) {
                 common.toast('info', data.message);
                 return ;
             }
             common.toast('success', data.message);
         });
+    }
+
+    function setPrivacy(uid, qid, targetUserId, type) {
+        urlService.question.setPrivacy(uid, qid, targetUserId, type).then(function (data) {
+            if (data.result !== 0) {
+                common.toast('info', data.message);
+                return ;
+            }
+            dataService.setAnswerPrivacy(uid, targetUserId, qid, type);
+            common.toast('success', '设置成功');
+        })
     }
 
     /**
@@ -249,10 +263,11 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
      */
     function onclose() {
         console.log("onclose");
-        dataService.removeUser(this.clientId);
-        pings.cancelPings(this.clientId); //结束发送心跳包
-        // if (!this.wss || !this.wss[this.clientId]) this.wss[this.clientId] = null;
+        var clientId = this.clientId; //获取断开链接的用户
+        dataService.removeUser(clientId); //删除用户
+        pings.cancelPings(clientId); //结束发送心跳包
         common.toast('info', '帐号已在其他设备登录');
+        urlService.user.userLogout(clientId);
     }
 
     /**
@@ -280,7 +295,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             return false;
         }
     }
-    
+
     function sendChatMsg(uid, touserId, contentType, content, qid, askUserId) {
         qid = typeof qid !== 'undefined' ?  qid : 0;
 
@@ -291,17 +306,23 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             return ;
         }
 
-        var sendContent = common.htmlToPlaintext(content);
+        // var sendContent = common.htmlToPlaintext(content);
 
         var data = {
             type : maConstants.wsMessageType.TYPE_SAY,
             uid : userInfo['uid'],
             targetUserId : touserInfo['uid'],
             sid : userInfo['sid'],
-            content : sendContent,
             contentType : contentType,
             messageId : createMessageId(touserInfo['uid']),
         };
+
+        if (contentType === maConstants.contentType.TYPE_TEXT) {
+            data.content = common.htmlToPlaintext(content);
+        } else if (contentType === maConstants.contentType.TYPE_IMAGE) {
+            data.reContent  = content.url;
+            content = content.content;
+        }
 
         if (qid !== 0) {
             data.qid = qid;
@@ -332,8 +353,18 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     }
 
     function sendChatImage(file) {
-        urlService.upload.uploadImg(file, function (resp) {
-            console.log(resp);
+        var objThis = this;
+        var uid = dataService.uiVar.userActive;
+        var touserId = dataService.uiVar.touserActive.uid;
+        if (!common.isValid([uid,touserId])) {
+            common.toast('info', '请选择用户在发送消息');
+            return ;
+        }
+        urlService.upload.uploadImg(file, function (data) {
+            console.log(data);
+            var qid = dataService.uiVar.touserActive.qid;
+            var askUserId = dataService.uiVar.touserActive.askUserId;
+            objThis.sendChatMsg(uid, touserId, maConstants.contentType.TYPE_IMAGE, data.data, qid, askUserId);
         });
     }
 
@@ -380,7 +411,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         };
         this.sendMsg(user.uid, msg);
     }
-    
+
     function sendFriendApply(uid, targetUserId) {
         var user = dataService.getUser(uid);
         var msg = {
@@ -391,7 +422,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         };
         this.sendMsg(uid, msg);
     }
-    
+
     function sendFriendAggree(uid, targetUserId, applyId) {
         var user = dataService.getUser(uid);
         var msg = {
@@ -516,6 +547,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             contentType : msg.contentType,
             content : msg.content,
             addTime : common.getCurrentTime()*1000,
+            voiceSeconds : msg.voiceSeconds,
         });
 
         if (dataService.uiVar.userActive === uid && dataService.uiVar.touserActive.uid === touserInfo['uid']
@@ -544,6 +576,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                 dataService.uiVar.touserChanges = !dataService.uiVar.touserChanges;
                 updateDom();
             });
+        } else {
+            dataService.uiVar.touserChanges = !dataService.uiVar.touserChanges;
+            updateDom();
         }
     }
 
@@ -597,6 +632,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             contentType : maConstants.contentType.TYPE_TEXT,
             content : maConstants.CHAT_HELLO_TEXT,
             addTime : common.getCurrentTime()*1000,
+            isQPrivacy : msg.isQPrivacy ? msg.isQPrivacy : 0,
         });
 
         //发送type=6
@@ -610,6 +646,20 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
 
     function handleEvaluateNotice(msg) {
         dataService.toUserAnswerEvaluate(msg.toUserId, msg.targetUserId, msg.qid);
+
+        //发送type=6
+        wss.sendClientNotice(msg.toUserId, {
+            type : msg.type,
+            qid : msg.qid,
+            randId : msg.randId
+        });
+
+        //toast提示
+        var user = dataService.getUser(msg.toUserId);
+        var touser = dataService.getToUser(msg.toUserId, msg.targetUserId, msg.qid);
+        if (!touser) {
+            common.toast('info', touser.nick + " 采纳了 " + user.nick + " 的提问");
+        }
     }
 
     function handleFriendApplyNotice(msg) {
@@ -660,7 +710,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                     common.toast('success', maConstants.message.loginSuccess);
                     pings.startPings(msg.toUserId);
                     dataService.uiVar.userActive = msg.toUserId;
+                    dataService.uiVar.userChanges = !dataService.uiVar.userChanges;
                 } else if (messageType === maConstants.wsMessageType.TYPE_LOGOUT) {
+                    dataService.uiVar.userActive = 0;
+                    dataService.uiVar.userChanges = !dataService.uiVar.userChanges;
                     wsClose(msg.toUserId);
                     common.toast('success', msg.message);
                 } else if (messageType === maConstants.wsMessageType.TYPE_SAY) {
@@ -671,16 +724,17 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                     dataService.replaceChatlogInfo(uid, toUserId, qid);
                     dataService.initUserSend();
                 } else if (messageType === maConstants.wsMessageType.TYPE_ANSWER_NOTICE) {
-                    wss.addToUser(msg.toUserId, msg.qid, msg.messageId);
+                    wss.addToUser(msg.toUserId, msg.qid, msg.messageId, false, function () {
+                        //收到解答成功之后删除问题列表中的问题
+                        dataService.removeQuestion(msg.toUserId, msg.qid);
+                        dataService.removeQuestionInfo(msg.qid);
 
-                    //收到解答成功之后删除问题列表中的问题
-                    dataService.removeQuestion(msg.toUserId, msg.qid);
-                    dataService.removeQuestionInfo(msg.qid);
-
-                    //焦点到toUserId那
-                    dataService.uiVar.touserActive.uid = msg.messageId;
-                    dataService.uiVar.touserActive.qid = msg.qid;
-                    dataService.uiVar.userActive = msg.toUserId;
+                        //焦点到toUserId那
+                        dataService.uiVar.touserActive.uid = msg.messageId;
+                        dataService.uiVar.touserActive.qid = msg.qid;
+                        dataService.uiVar.userActive = msg.toUserId;
+                        dataService.uiVar.touserChanges = !dataService.uiVar.touserChanges;
+                    });
                 } else if (messageType === maConstants.wsMessageType.TYPE_QUESTION) {
                     common.toast('info', '发送问题成功，请等待回答……');
 
@@ -701,7 +755,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                 break;
 
             case 1001:
+                dataService.uiVar.userActive = 0;
                 wsClose(msg.toUserId); //登录过期
+                dataService.initTouserInfo();
                 common.toast('info', msg.message);
                 break;
 
@@ -729,6 +785,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             case 1012: //参数出错
             case 1013: //不能重复点赞
             case 1014: //提问过于频繁，请稍后
+            case 1018: //不能回答自己的问题
                 common.toast('info', msg.message);
                 break;
         }
@@ -753,6 +810,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     }
 
     function startPings(uid) {
+        if (!uid || !this.usersIntv[uid]) return ;
         this.cancelPings(uid);
         this.usersIntv[uid] = $interval(function () {
             var userInfo = dataService.getUser(uid);
@@ -761,7 +819,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     }
 
     function cancelPings(uid) {
-        if (!this.usersIntv[uid]) return ;
+        if (!this.usersIntv || !this.usersIntv[uid]) return ;
 
         $interval.cancel(this.usersIntv[uid]);
         this.usersIntv = undefined;

@@ -3,16 +3,16 @@ var app = angular.module("app", ['ngSanitize', 'contenteditable', 'angularLazyIm
 app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common', 'maConstants', 'emojiFactory', 'mapService', function($scope, $sce, wsService, dataService, common, maConstants, emojiFactory, mapService) {
 
 
-    //初始化wsFactory
+    //初始化wsFactory,type=1为websocket模式（socket.io模式待扩展）
     wsService.init({type : 1});
-    $scope.emojis = emojiFactory.emj('html_to_html5');
-    $scope.contentType = maConstants.contentType;
-    initParams();
+    $scope.emojis = emojiFactory.emj('html_to_html5'); //初始化表情库
+    $scope.contentType = maConstants.contentType; //初始化消息类型
+    initParams(); //初始化（清空）默认的聊天标题和聊天记录
 
     $scope.scrollVisible = 1;
     $scope.dialogType = 0;
 
-    mapService.init({containerId:'amap', inputId:'inputAddress'});
+    mapService.init({containerId:'amap', inputId:'inputAddress'}); //初始化高德地图服务
 
     //登录对话框 与dataService相应变量进行绑定
     $scope.uiVar = dataService.uiVar;
@@ -45,6 +45,12 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         }
     };
 
+    //问题设置私密开关
+    $scope.changeQuePrivacy = function () {
+        dataService.uiVar.queSend.isPrivacy = !dataService.uiVar.queSend.isPrivacy;
+        var text = dataService.uiVar.queSend.isPrivacy ? "已设置私密提问" : "已取消私密提问";
+        common.toast('info', text);
+    };
     //发送问题
     $scope.queSend = function () {
 
@@ -54,30 +60,49 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         }
         wsService.sendQue(dataService.uiVar.userActive, dataService.uiVar.queSend);
     };
+    //设置问题是否私密,0->取消私密,1->设置私密
+    $scope.setPrivacy = function (uid, qid, targetUserId, type) {
+        type = type ? 1 : 0;
+        var text = type ? "你要设置此回答为私密回答么？" : "你要取消私密么";
+        common.swal('confirm', text, function () {
+            wsService.setPrivacy(uid, qid, targetUserId, type);
+        });
+    };
 
 
     //左侧客服用户列表选择
-    $scope.userClick = function(uid) {
+    $scope.userClick = function(uid, initToUser) {
+        initToUser = initToUser !== undefined ? initToUser : true;
         dataService.uiVar.userActive = uid;
         dataService.uiVar.queActive = 0;
         if (!dataService.tousers[$scope.userActive]) dataService.tousers[$scope.userActive]=[];
         $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
 
-        dataService.uiVar.touserActive.uid = 0;
-        dataService.uiVar.touserActive.qid = 0;
+        if (initToUser) {
+            dataService.uiVar.touserActive.uid = 0;
+            dataService.uiVar.touserActive.qid = 0;
+        }
 
         dataService.uiVar.badge(0, uid); //取消badge显示
         initParams();
+
+        if ($scope.tousers.length > 0 && initToUser) {
+            var touser = $scope.tousers[0];
+            $scope.touserClick(touser.uid, touser.nick, touser.avatar, touser.content, touser.contentType, touser.address
+                , touser.qid, touser.askUserId, touser.isQPrivacy);
+        }
     };
 
     //右侧对方用户列表选择
-    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId, initBadge) {
+    $scope.touserClick = function(uid, nick, avatar, content, contentType, address, qid, askUserId, isQPrivacy, initBadge) {
+        isQPrivacy = isQPrivacy !== undefined ? isQPrivacy : 0;
         initBadge = initBadge !== undefined ? initBadge : true;
 
         dataService['uiVar']['touserActive']['uid'] = uid;
         dataService['uiVar']['touserActive']['qid'] = qid;
         dataService['uiVar']['touserActive']['askUserId'] = askUserId;
-        dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar, content:content, contentType:contentType, address:address, askUserId : askUserId});
+        dataService.initTouserInfo({uid:uid, qid:qid, nick:nick, avatar:avatar,
+            content:content, contentType:contentType, address:address, askUserId : askUserId, isQPrivacy : isQPrivacy});
 
         //获取聊天记录数据并显示
         dataService.replaceChatlogInfo(dataService.uiVar.userActive, uid, qid);
@@ -111,6 +136,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     };
     //badge显示相关
     $scope.checkShowBadge = function (uid, qid) {
+        if (!dataService.uiVar.userBadge || !dataService.uiVar.userBadge[dataService.uiVar.userActive])
+            return false;
         return dataService.uiVar.userBadge[dataService.uiVar.userActive][uid+'-'+qid];
     };
 
@@ -206,7 +233,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
                 break;
 
             case maConstants.contentType.TYPE_MAP:
-                return content.split(',')[3];
+                var contents = content.split(',');
+                return contents[contents.length-1];
                 break;
         }
 
@@ -223,7 +251,8 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
                 content = content.split(',')[3];
                 break;
             case maConstants.contentType.TYPE_MAP:
-                content = content.split(',')[3];
+                var contents = content.split(',');
+                content = contents[contents.length-1];
                 var index = content.indexOf("/thumb/");
                 if (index != -1) {
                     content = content.substring(0, index+1) + content.substring(index+6, content.length);
@@ -262,22 +291,28 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     }
 
     /**
+     * 监听左侧列表用户选中情况的变化
+     */
+    $scope.$watch('uiVar.userChanges', function () {
+        if (dataService.uiVar.userActive === 0) {
+            $scope.tousers = dataService.tousers[dataService.uiVar.userActive];
+            dataService.initTouserInfo();
+            return ;
+        }
+        $scope.userClick(dataService.uiVar.userActive);
+    });
+
+    /**
      * 监听uiVar.touserActive.uid值的变化，相应调用一下点击事件
      */
     $scope.$watch('uiVar.touserChanges', function () {
         var touserInfo = dataService.getToUser(dataService.uiVar.userActive, dataService.uiVar.touserActive.uid, dataService.uiVar.touserActive.qid);
         if (touserInfo === null) return ;
 
-        $scope.touserClick(touserInfo['uid'], touserInfo['nick'], touserInfo['avatar'], touserInfo['content']
-            , touserInfo['contentType'], touserInfo['address'], touserInfo['qid'], touserInfo['askUserId'], false);
-    });
+        $scope.userClick(dataService.uiVar.userActive, false);
 
-    /**
-     * 监听左侧列表用户选中情况的变化
-     */
-    $scope.$watch('uiVar.userActive', function () {
-        if (dataService.uiVar.userActive === 0) return ;
-        $scope.userClick(dataService.uiVar.userActive);
+        $scope.touserClick(touserInfo['uid'], touserInfo['nick'], touserInfo['avatar'], touserInfo['content']
+            , touserInfo['contentType'], touserInfo['address'], touserInfo['qid'], touserInfo['askUserId'], touserInfo['isQPrivacy'], true);
     });
 
     /**
@@ -331,6 +366,9 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         wsService.logout(uid);
     }
 
+    /**
+     * 初始化（清空）默认的聊天标题和聊天记录
+     */
     function initParams() {
         dataService.initTouserInfo();
         //聊天标题栏

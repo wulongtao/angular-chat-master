@@ -30,11 +30,13 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
                 content : "",
                 contentType : 1,
                 address : "",
+                isPrivacy : 0, //私密提问
             },
             loginDialogActive : false,
             addQueDialogActive : false,
 
             userActive : 0,
+            userChanges : 0,
             touserActive : {},
             touserChanges : 0,//一个常量监听touserActive的变化
             queActive : 0,
@@ -67,6 +69,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         getUser : getUser, //获取用户
         addToUser : addToUser, //添加聊天的另外一个用户
         toUserAnswerEvaluate : toUserAnswerEvaluate, //对方采纳回答，把tousers中相应的questionStatus设置为1
+        setAnswerPrivacy : setAnswerPrivacy, //设置或者取消私密
         removeToUser : removeToUser, //删除
         getToUser : getToUser, //获取
         getToUsers : getToUsers, //获取
@@ -190,11 +193,13 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             askUserId : touserInfo.askUserId,
             randId : touserInfo.randId,
             questionStatus : 0, //问题的状态，1为已采纳
+            isQPrivacy : touserInfo.isQPrivacy,
         });
         save();
     }
 
     function toUserAnswerEvaluate(uid, toUserId, qid) {
+        if (!this.tousers[uid] || !Array.isArray(this.tousers[uid])) return false;
         for (var i = 0; i < this.tousers[uid].length; i++) {
             if (toUserId===this.tousers[uid][i].uid && qid===this.tousers[uid][i].qid) {
                 this.tousers[uid][i].questionStatus = 1;
@@ -203,6 +208,18 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             }
         }
         return false;
+    }
+    
+    function setAnswerPrivacy(uid, toUserId, qid, isQPrivacy) {
+        if (!this.tousers[uid] || !Array.isArray(this.tousers[uid])) return false;
+        for (var i = 0; i < this.tousers[uid].length; i++) {
+            if (toUserId===this.tousers[uid][i].uid && qid===this.tousers[uid][i].qid) {
+                this.tousers[uid][i].isQPrivacy = isQPrivacy;
+                save();
+                this.touserInfo.isQPrivacy = isQPrivacy;
+                return true;
+            }
+        }
     }
 
     function removeToUser(uid, touserId, qid) {
@@ -365,6 +382,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
         this.touserInfo.contentType = data.contentType ? data.contentType : maConstants.contentType.TYPE_TEXT;
         this.touserInfo.address = data.address ? data.address : "";
         this.touserInfo.askUserId = data.askUserId ? data.askUserId : 0;
+        this.touserInfo.isQPrivacy = data.isQPrivacy ? data.isQPrivacy : 0;
 
         if (data.askUserId === this.uiVar.userActive) {
             var user = this.getUser(data.askUserId);
