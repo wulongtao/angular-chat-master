@@ -55,8 +55,8 @@
 			<div class="chat-title">
 				<div class="avatar-info" ng-click="setPrivacy(uiVar.userActive,touser.qid,touser.uid,!touser.isQPrivacy)">
 					<img class="target-user-avatar" ng-src=" {{touser.avatar}} ">
-					<span ng-if="!touser.isQPrivacy&&touser.qid" >设置私密</span>
-					<span class="que-privacy" ng-if="touser.isQPrivacy&&touser.qid">秘</span>
+					<span ng-if="touser.isQPrivacy==0&&touser.qid" >设置私密</span>
+					<span class="que-privacy" ng-if="touser.isQPrivacy!=0&&touser.qid!=0">秘</span>
 				</div>
 				<div class="inner-chat-title">
 					<span class="target-user-nick"> {{touser.nick}} <br> <span class="target-user-address">(地址: {{touser.address}})</span> </span>
@@ -300,7 +300,6 @@
 <script type="text/javascript" src="../static/js/ma-operator/chat/emojiFactory.js"></script>
 <script type="text/javascript" src="../static/js/ma-operator/chat/httpService.js"></script>
 <script type="text/javascript" src="../static/js/ma-operator/chat/urlService.js"></script>
-<script type="text/javascript" src="../static/js/ma-operator/chat/chatUtil.js"></script>
 <script type="text/javascript" src="../static/js/ma-operator/chat/maConstants.js"></script>
 <script type="text/javascript" src="../static/js/ma-operator/chat/wsService.js"></script>
 <script type="text/javascript" src="../static/js/ma-operator/chat/common.js"></script>

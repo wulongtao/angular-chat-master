@@ -138,6 +138,13 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
     }
 
     function addUser(user) {
+        for (var i = 0; i < this.users.length; i++) {
+            var userTmp = this.users[i];
+            if (user.uid === userTmp.uid) {
+                this.users.splice(i, 1);
+                break;
+            }
+        }
 
         this.users.push({
             uid : user.uid,
@@ -386,6 +393,7 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
 
         if (data.askUserId === this.uiVar.userActive) {
             var user = this.getUser(data.askUserId);
+            if (!user) return ;
             this.touserInfo.uid = user.uid;
             this.touserInfo.nick = user.nick;
             this.touserInfo.avatar = user.avatar;

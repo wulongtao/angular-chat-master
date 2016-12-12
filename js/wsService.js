@@ -8,7 +8,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         type : 0, //类型1->websocket，2->socket.io
         wss : new Array(),
 
-        host : '113.108.232.194',
+        host : document.domain,
         port : '8381',
 
         addUser : addUser, //添加客服用户
@@ -95,6 +95,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         urlService.user.add(phone, password).then(function (data) {
             if (data.result != 0) {
                 common.toast('info', data.message);
+                urlService.user.userLogout(data.uid);
                 return false;
             }
 
@@ -133,7 +134,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                 qid : questionInfo.qid ? questionInfo.qid : 0,
                 contentType : questionInfo.contentType ? questionInfo.contentType : 1,
                 content : questionInfo.content ? questionInfo.content : "无",
-                address : questionInfo.address ? questionInfo.fromUserId : "普通聊天，无地址",
+                address : questionInfo.address ? questionInfo.address : "普通聊天，无地址",
                 askUserId : questionInfo.fromUserId ? questionInfo.fromUserId : 0,
                 isQPrivacy : questionInfo.isPrivacy ? questionInfo.isPrivacy : 0,
             });
@@ -202,6 +203,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
      * @param user json对象
      */
     function login(user) {
+        if (user == null) return ;
         var objThis = this;
         var uid = user['uid'];
 
@@ -264,10 +266,12 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     function onclose() {
         console.log("onclose");
         var clientId = this.clientId; //获取断开链接的用户
-        dataService.removeUser(clientId); //删除用户
+        // dataService.removeUser(clientId); //删除用户
         pings.cancelPings(clientId); //结束发送心跳包
-        common.toast('info', '帐号已在其他设备登录');
-        urlService.user.userLogout(clientId);
+        // urlService.user.userLogout(clientId);
+        //尝试再次登录
+        var user = dataService.getUser(clientId);
+        wss.login(user);
     }
 
     /**
@@ -291,7 +295,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             ws.send(JSON.stringify(msg));
             return true;
         } else {
-            common.toast('info', '发送信息太快，请稍后再发送');
+            common.toast('info', '发送信息太快（或者你已经在同一个浏览器中打开了两个聊天页面），请稍后再发送');
             return false;
         }
     }
@@ -324,6 +328,10 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             content = content.content;
         }
 
+        if (data.contentType === maConstants.contentType.TYPE_IMAGE && !data.reContent) {
+            return false;
+        }
+
         if (qid !== 0) {
             data.qid = qid;
             data.askUserId = askUserId;
@@ -340,9 +348,9 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             addTime : common.getCurrentTime()*1000,
         });
 
-        console.log(data);
-
         this.sendMsg(uid, data);
+
+        dataService.initUserSend();
     }
 
     function sendQue(uid, data) {
@@ -737,7 +745,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
                     var qid = msg.qid;
 
                     dataService.replaceChatlogInfo(uid, toUserId, qid);
-                    dataService.initUserSend();
+                    // dataService.initUserSend();
                 } else if (messageType === maConstants.wsMessageType.TYPE_ANSWER_NOTICE) {
                     wss.addToUser(msg.toUserId, msg.qid, msg.messageId, false, function () {
                         //收到解答成功之后删除问题列表中的问题

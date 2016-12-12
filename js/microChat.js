@@ -67,6 +67,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         var text = type ? "你要设置此回答为私密回答么？" : "你要取消私密么";
         common.swal('confirm', text, function () {
             wsService.setPrivacy(uid, qid, targetUserId, type);
+            dataService.uiVar.queSend.isPrivacy = type;
         });
     };
 
@@ -110,7 +111,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         $scope.chatlogInfo = dataService.chatlogInfo;
 
         //TODO 大于3会显示滚动条，这里需要优化
-        if ($scope.chatlogInfo.length >= 3) { $scope.scrollVisible = 1; }
+        if ($scope.chatlogInfo.length >= 2) { $scope.scrollVisible = 1; }
         else { $scope.scrollVisible = 0; }
 
         if (initBadge) {
@@ -207,10 +208,15 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
         }
         wsService.sendChatMsg(dataService.uiVar.userActive, $scope.uiVar.touserActive.uid, $scope.userSend.contentType, content, $scope.uiVar.touserActive.qid, $scope.touser.askUserId);
         $scope.chatlogInfo = dataService.chatlogInfo;
+        //TODO 大于3会显示滚动条，这里需要优化
+        if ($scope.chatlogInfo.length >= 2) { $scope.scrollVisible = 1; }
+        else { $scope.scrollVisible = 0; }
     };
     //发送图片
     $scope.uploadImage = function (file) {
         wsService.sendChatImage(file);
+        if ($scope.chatlogInfo.length >= 0) { $scope.scrollVisible = 1; }
+        else { $scope.scrollVisible = 0; }
     };
     //提问者评价（采纳）
     $scope.sendEvaluate = function () {
@@ -276,7 +282,7 @@ app.controller("CtlChat", ['$scope', '$sce', 'wsService', 'dataService', 'common
     $scope.addEmojiToContent = function (code, html) {
         dataService.uiVar.userSend.content += html + "&nbsp;";
     };
-    
+
     //添加好友
     $scope.addFriend = function () {
         common.swal('confirm', '你确定加他为好友么？', function () {
