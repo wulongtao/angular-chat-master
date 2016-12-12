@@ -4,6 +4,7 @@
  */
 angular.module('common', ['toaster', 'angular-web-notification', 'oitozero.ngSweetAlert', 'ngAnimate']).factory('common', function (toaster, webNotification, SweetAlert, $window) {
     var common = {
+        init : init, //初始化
         toast : toast, //toast消息
         swal : swal, //sweet alert弹出框
         isValid : isValid, //判断参数是否为空
@@ -11,6 +12,7 @@ angular.module('common', ['toaster', 'angular-web-notification', 'oitozero.ngSwe
         getCurrentTime : getCurrentTime, //获取当前时间
         removeBlank : removeBlank, //去除空格
         showNotification : showNotification, //notification
+        windowFocus : 1, //浏览器窗口是否是活动的
     };
 
     /**
@@ -128,6 +130,16 @@ angular.module('common', ['toaster', 'angular-web-notification', 'oitozero.ngSwe
                 }, 5000);
             }
         });
+    }
+
+    function init() {
+        var objThis = this;
+        $window.onfocus = function () {
+            objThis.windowFocus = 1;
+        };
+        $window.onblur = function () {
+            objThis.windowFocus = 0;
+        };
     }
 
     return common;

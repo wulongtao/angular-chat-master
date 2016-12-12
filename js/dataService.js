@@ -391,7 +391,15 @@ angular.module('dataService', ['maConstants']).factory('dataService', function (
             this.touserInfo.avatar = user.avatar;
         }
     }
-    
+
+    /**
+     * 设置badge提醒
+     * @param badge 0->取消，1->设置
+     * @param uid
+     * @param toUserId
+     * @param qid
+     * @returns {boolean}
+     */
     function badge(badge, uid, toUserId, qid) {
         uid = typeof uid !== 'undefined' ?  uid : undefined;
         toUserId = typeof toUserId !== 'undefined' ?  toUserId : 0;

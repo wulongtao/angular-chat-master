@@ -180,8 +180,8 @@
 		</div>
 
 		<!--表情显示-->
-		<div class="emoji-box" ng-show="emojiActive">
-			<ul>
+		<div class="face-box" ng-show="emojiActive">
+			<ul class="emoji-box">
 				<li class="emoji-item" ng-repeat="emj in emojis track by $index"
 					ng-bind-html="deliberatelyTrustDangerousSnippet(emj.html)" ng-click="addEmojiToContent(emj.code,emj.html)"></li>
 			</ul>

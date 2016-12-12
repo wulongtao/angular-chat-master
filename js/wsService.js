@@ -177,7 +177,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
     function thankUser(uid, touserId, qid) {
         var touser = dataService.getToUser(uid, touserId, qid);
         urlService.question.thankUser(uid, touser.randId).then(function (data) {
-            console.log(data);
+            // console.log(data);
             if (data.result !== 0) {
                 common.toast('info', data.message);
                 return ;
@@ -254,7 +254,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         msg = JSON.parse(msg.data);
         msg.toUserId = this.clientId;
         if (!msg.qid) msg.qid = 0;
-        console.log(msg);
+        // console.log(msg);
         handleMessage(msg);
     }
 
@@ -340,6 +340,8 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             addTime : common.getCurrentTime()*1000,
         });
 
+        console.log(data);
+
         this.sendMsg(uid, data);
     }
 
@@ -361,7 +363,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             return ;
         }
         urlService.upload.uploadImg(file, function (data) {
-            console.log(data);
+            // console.log(data);
             var qid = dataService.uiVar.touserActive.qid;
             var askUserId = dataService.uiVar.touserActive.askUserId;
             objThis.sendChatMsg(uid, touserId, maConstants.contentType.TYPE_IMAGE, data.data, qid, askUserId);
@@ -568,7 +570,8 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
         if (dataService.uiVar.touserActive.qid!==touserInfo['qid'] || dataService.uiVar.touserActive.uid!==touserInfo['uid']) {
             dataService.uiVar.badge(1, uid, touserInfo['uid'], qid);
         }
-        if (dataService.uiVar.userActive!==0 && (dataService.uiVar.touserActive.uid!==touserInfo['uid'] || dataService.uiVar.touserActive.qid!==touserInfo['qid'])) {
+        if ((dataService.uiVar.userActive!==0 && (dataService.uiVar.touserActive.uid!==touserInfo['uid'] || dataService.uiVar.touserActive.qid!==touserInfo['qid']))
+            || !common.windowFocus) {
             common.showNotification('您有新的消息', function () {
                 dataService.uiVar.userActive = msg.toUserId;
                 dataService.uiVar.touserActive.qid = touserInfo['qid'];
@@ -616,6 +619,7 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             address : msg.address,
             askUserId : msg.askUserId,
             randId : msg.randId,//randId就是answer表中的aid
+            isQPrivacy : msg.isQPrivacy ? msg.isQPrivacy : 0,
         });
 
         if (rs === false) {
@@ -632,7 +636,6 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             contentType : maConstants.contentType.TYPE_TEXT,
             content : maConstants.CHAT_HELLO_TEXT,
             addTime : common.getCurrentTime()*1000,
-            isQPrivacy : msg.isQPrivacy ? msg.isQPrivacy : 0,
         });
 
         //发送type=6
@@ -640,6 +643,18 @@ angular.module('chat', ['urlService', 'common', 'maConstants', 'dataService', 'e
             type : msg.type,
             qid : msg.qid,
             randId : msg.randId,
+        });
+
+        /**
+         * 消息提醒
+         */
+        dataService.uiVar.badge(1, msg.toUserId, msg.targetUserId, msg.qid);
+        common.showNotification('有人回答了你的提问', function () {
+            dataService.uiVar.userActive = msg.toUserId;
+            dataService.uiVar.touserActive.qid = msg.qid;
+            dataService.uiVar.touserActive.uid = msg.targetUserId;
+            dataService.uiVar.touserChanges = !dataService.uiVar.touserChanges;
+            updateDom();
         });
 
     }
